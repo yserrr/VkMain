@@ -1,0 +1,4 @@
+/home/ljh/vk/build/CMakeFiles/exe.dir
+/home/ljh/vk/build/CMakeFiles/compile_shaders.dir
+/home/ljh/vk/build/CMakeFiles/edit_cache.dir
+/home/ljh/vk/build/CMakeFiles/rebuild_cache.dir

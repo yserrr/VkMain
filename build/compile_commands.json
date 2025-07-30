@@ -1,0 +1,116 @@
+[
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/main.cpp.o -c /home/ljh/vk/main.cpp",
+  "file": "/home/ljh/vk/main.cpp",
+  "output": "CMakeFiles/exe.dir/main.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/core/Engine.cpp.o -c /home/ljh/vk/core/Engine.cpp",
+  "file": "/home/ljh/vk/core/Engine.cpp",
+  "output": "CMakeFiles/exe.dir/core/Engine.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/core/engineInit.cpp.o -c /home/ljh/vk/core/engineInit.cpp",
+  "file": "/home/ljh/vk/core/engineInit.cpp",
+  "output": "CMakeFiles/exe.dir/core/engineInit.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/core/draw.cpp.o -c /home/ljh/vk/core/draw.cpp",
+  "file": "/home/ljh/vk/core/draw.cpp",
+  "output": "CMakeFiles/exe.dir/core/draw.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/core/asset.cpp.o -c /home/ljh/vk/core/asset.cpp",
+  "file": "/home/ljh/vk/core/asset.cpp",
+  "output": "CMakeFiles/exe.dir/core/asset.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/core/interaction.cpp.o -c /home/ljh/vk/core/interaction.cpp",
+  "file": "/home/ljh/vk/core/interaction.cpp",
+  "output": "CMakeFiles/exe.dir/core/interaction.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/core/uiDraw.cpp.o -c /home/ljh/vk/core/uiDraw.cpp",
+  "file": "/home/ljh/vk/core/uiDraw.cpp",
+  "output": "CMakeFiles/exe.dir/core/uiDraw.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/resource/descriptorPool.cpp.o -c /home/ljh/vk/resource/descriptorPool.cpp",
+  "file": "/home/ljh/vk/resource/descriptorPool.cpp",
+  "output": "CMakeFiles/exe.dir/resource/descriptorPool.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/resource/buffer.cpp.o -c /home/ljh/vk/resource/buffer.cpp",
+  "file": "/home/ljh/vk/resource/buffer.cpp",
+  "output": "CMakeFiles/exe.dir/resource/buffer.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/model/texture.cpp.o -c /home/ljh/vk/model/texture.cpp",
+  "file": "/home/ljh/vk/model/texture.cpp",
+  "output": "CMakeFiles/exe.dir/model/texture.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/model/camera.cpp.o -c /home/ljh/vk/model/camera.cpp",
+  "file": "/home/ljh/vk/model/camera.cpp",
+  "output": "CMakeFiles/exe.dir/model/camera.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/resource/swapchain.cpp.o -c /home/ljh/vk/resource/swapchain.cpp",
+  "file": "/home/ljh/vk/resource/swapchain.cpp",
+  "output": "CMakeFiles/exe.dir/resource/swapchain.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/imgui/imgui_impl_glfw.cpp.o -c /home/ljh/vk/imgui/imgui_impl_glfw.cpp",
+  "file": "/home/ljh/vk/imgui/imgui_impl_glfw.cpp",
+  "output": "CMakeFiles/exe.dir/imgui/imgui_impl_glfw.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/imgui/imgui.cpp.o -c /home/ljh/vk/imgui/imgui.cpp",
+  "file": "/home/ljh/vk/imgui/imgui.cpp",
+  "output": "CMakeFiles/exe.dir/imgui/imgui.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/imgui/imgui_draw.cpp.o -c /home/ljh/vk/imgui/imgui_draw.cpp",
+  "file": "/home/ljh/vk/imgui/imgui_draw.cpp",
+  "output": "CMakeFiles/exe.dir/imgui/imgui_draw.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/imgui/imgui_demo.cpp.o -c /home/ljh/vk/imgui/imgui_demo.cpp",
+  "file": "/home/ljh/vk/imgui/imgui_demo.cpp",
+  "output": "CMakeFiles/exe.dir/imgui/imgui_demo.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/imgui/imgui_tables.cpp.o -c /home/ljh/vk/imgui/imgui_tables.cpp",
+  "file": "/home/ljh/vk/imgui/imgui_tables.cpp",
+  "output": "CMakeFiles/exe.dir/imgui/imgui_tables.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/imgui/imgui_widgets.cpp.o -c /home/ljh/vk/imgui/imgui_widgets.cpp",
+  "file": "/home/ljh/vk/imgui/imgui_widgets.cpp",
+  "output": "CMakeFiles/exe.dir/imgui/imgui_widgets.cpp.o"
+},
+{
+  "directory": "/home/ljh/vk/build",
+  "command": "/usr/bin/g++ -DFMT_SHARED -DSPDLOG_COMPILED_LIB -DSPDLOG_FMT_EXTERNAL -DSPDLOG_SHARED_LIB -I/home/ljh/vk/resource -I/home/ljh/vk/renderer -I/home/ljh/vk/extern -I/home/ljh/vk/model -I/home/ljh/vk/imgui -I/home/ljh/vk/imgui/back -I/home/ljh/vk/core -isystem /home/ljh/anaconda3/include  -O0 -g -std=gnu++17 -o CMakeFiles/exe.dir/imgui/back/imgui_impl_vulkan.cpp.o -c /home/ljh/vk/imgui/back/imgui_impl_vulkan.cpp",
+  "file": "/home/ljh/vk/imgui/back/imgui_impl_vulkan.cpp",
+  "output": "CMakeFiles/exe.dir/imgui/back/imgui_impl_vulkan.cpp.o"
+}
+]
