@@ -4,7 +4,7 @@
 
 class FenceManager {
 public:
-FenceManager(signalCreateInfo info, bool signaled= false) 
+FenceManager(SignalCreateInfo info, bool signaled= false) 
 : device(info.device),
   MAX_FRAMES_IN_FLIGHT(info.MAX_FRAMES_IN_FLIGHT), 
   fences(info.MAX_FRAMES_IN_FLIGHT) 

@@ -27,7 +27,7 @@ add_executable(exe
         source/core/engine.cpp
         source/core/engineInit.cpp
         source/core/draw.cpp
-        source/core/asset.cpp
+        source/core/asset_setup.cpp
         source/core/event_manager.cpp
 
         source/core/ui_renderer_begin.cpp
@@ -40,7 +40,9 @@ add_executable(exe
         source/resource/buffer.cpp
         source/model/texture.cpp
         source/model/camera.cpp
+
         source/resource/swapchain.cpp
+        source/resource/semaphore.cpp
 
 
         extern/imgui/imgui_impl_glfw.cpp
@@ -50,6 +52,9 @@ add_executable(exe
         extern/imgui/imgui_tables.cpp
         extern/imgui/imgui_widgets.cpp
         extern/imgui/back/imgui_impl_vulkan.cpp
+        source/renderer/renderpass.cpp
+        source/resource/command_pool.cpp
+        source/resource/semaphore.cpp
 )
 find_package(spdlog REQUIRED)
 find_package(assimp REQUIRED)

@@ -3,7 +3,7 @@
 int main(){
     const char* frag = "/home/ljh/CLionProjects/VkMain/shader/fragment.spv";
     const char* vert = "/home/ljh/CLionProjects/VkMain/shader/vertex.spv";
-    engine engine;
+    Engine engine;
     engine.initialize(); 
     engine.mainLoop();
 }

@@ -1,13 +1,13 @@
 #include<engine.hpp>
 //
-engine::~engine()
+Engine::~Engine()
 {
   if (device->get() != VK_NULL_HANDLE) vkDestroyDevice(device->get(), nullptr);
   if (surface->get() != VK_NULL_HANDLE) vkDestroySurfaceKHR(instance->get(), surface->get(), nullptr);
   if (instance->get() != VK_NULL_HANDLE) vkDestroyInstance(instance->get(), nullptr);
 }
 
-void engine::initialize()
+void Engine::initialize()
 {
   initVulkan();
   initAsset();
@@ -22,7 +22,7 @@ void engine::initialize()
 
 //vulkan resource
 //get handler only
-void engine::initVulkan()
+void Engine::initVulkan()
 {
   window            = std::make_unique<Window>(extent, title);
   window_h          = window->get();
@@ -43,7 +43,7 @@ void engine::initVulkan()
 }
 
 //asset and renderer allcoate
-void engine::initAsset()
+void Engine::initAsset()
 {
   assetCreateInfo assetInfo;
   assetInfo.device    = device_h;
@@ -55,7 +55,7 @@ void engine::initAsset()
   asset->setLight();
 }
 
-void engine::initFrame()
+void Engine::initFrame()
 {
   createSwapchain();
   createImageManager();
@@ -66,7 +66,7 @@ void engine::initFrame()
   createSignals();
 }
 
-void engine::createSwapchain()
+void Engine::createSwapchain()
 {
 //screate swapchain from logical device context
 //swapchain setting
@@ -88,7 +88,7 @@ void engine::createSwapchain()
 
 //swapchain  can be deleted
 //but images shoud exist so sperate image manager and swapchain
-void engine::createImageManager()
+void Engine::createImageManager()
 {
   imageManagerCreateInfo imageManagerInfo{};
   imageManagerInfo.device    = device_h;
@@ -100,10 +100,10 @@ void engine::createImageManager()
   spdlog::info("create Image Manager");
 }
 
-void engine::createCommandBuffer()
+void Engine::createCommandBuffer()
 {
 //createCommandPool
-  commandPoolCreateInfo commandPoolInfo;
+  CommandPoolCreateInfo commandPoolInfo;
   commandPoolInfo.device           = device_h;
   commandPoolInfo.queueFamilyIndex = graphics_family;
   commandPool                      = std::make_unique<CommandPool>(commandPoolInfo);
@@ -118,17 +118,17 @@ void engine::createCommandBuffer()
 }
 
 //create renderPass
-void engine::createRenderPass()
+void Engine::createRenderPass()
 {
-  renderPassCreateInfo renderpassInfo;
+  RenderPassCreateInfo renderpassInfo;
   renderpassInfo.device      = device_h;
   renderpassInfo.colorFormat = imageformat_h;
-  renderPass                 = std::make_unique<RenderPass>(renderpassInfo);
-  renderpass_h               = renderPass->get();
+  renderPass                 = std::make_unique<RenderPassPool>(renderpassInfo);
+  renderpass_h               = renderPass->buildSysForwardPass();
   spdlog::info("create RenderPass");
 }
 
-void engine::createFrameBuffer()
+void Engine::createFrameBuffer()
 {
 //create framebuffer
   frameBufferCreateInfo frameBufferInfo{};
@@ -141,19 +141,19 @@ void engine::createFrameBuffer()
   spdlog::info("create Frame buffers");
 }
 
-void engine::createSignals()
+void Engine::createSignals()
 {
 //create Synchro Object
-  signalCreateInfo signalInfo;
+  SignalCreateInfo signalInfo;
   signalInfo.device               = device_h;
   signalInfo.MAX_FRAMES_IN_FLIGHT = MAX_FRAMES_IN_FLIGHT;
-  imageAvailableSemaphores        = std::make_unique<SemaphoreManager>(signalInfo);
-  renderFinishedSemaphores        = std::make_unique<SemaphoreManager>(signalInfo);
+  imageAvailableSemaphores        = std::make_unique<SemaphorePool>(signalInfo);
+  renderFinishedSemaphores        = std::make_unique<SemaphorePool>(signalInfo);
   inFlightFences                  = std::make_unique<FenceManager>(signalInfo, true);
   spdlog::info("create fence and semaphore");
 }
 
-void engine::createDescriptors()
+void Engine::createDescriptors()
 {
   descriptorManager = std::make_unique<DescriptorManager>(device_h);
   descriptorManager->allocateDescriptor();
@@ -161,7 +161,7 @@ void engine::createDescriptors()
   sets = descriptorManager->getSets();
 }
 
-void engine::initRender()
+void Engine::initRender()
 {
   spdlog::info("init renderer");
   rendererCreateInfo renderinfo{};
@@ -173,13 +173,12 @@ void engine::initRender()
   renderinfo.swapchain     = swapchain.get();
   renderinfo.imageManager  = imageManager.get();
   renderinfo.renderPass    = renderpass_h;
-  Program program          = {vert, frag}; //renderer 생성
-  sceneRenderer            = std::make_unique<SceneRenderer>(renderinfo, program);
+  sceneRenderer            = std::make_unique<SysRenderer>(renderinfo);
   sceneRenderer->createPipeline((descriptorManager->getLayouts()));
   pipeline_layout_h = sceneRenderer->getPipelineLayout();
 }
 
-void engine::initUI()
+void Engine::initUI()
 {
   UIRendererCreateInfo UIinfo;
   UIinfo.window_h          = window_h;

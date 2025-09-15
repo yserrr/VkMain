@@ -2,7 +2,7 @@
 #include <swapChain.hpp>
 #include <framebuffer.hpp>
 #include <commandBuffer.hpp>
-#include <renderPass.hpp>
+#include <renderpass.hpp>
 #include <pipeline.hpp>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>

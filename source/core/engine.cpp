@@ -2,7 +2,7 @@
 #define   STB_IMAGE_IMPLEMENTATION 
 #include <engine.hpp>
 
-void engine::mainLoop(){
+void Engine::mainLoop(){
     setUp();
     spdlog::info("render set up");
     setUp();
@@ -46,7 +46,7 @@ void engine::mainLoop(){
     window.reset();
 }
 
-void engine::setUp(){
+void Engine::setUp(){
     inFlightFences->  wait(currentFrame); 
     inFlightFences-> reset(currentFrame);
     VkSemaphore     semaphore   = imageAvailableSemaphores->get(currentFrame);
@@ -63,11 +63,11 @@ void engine::setUp(){
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-VkCommandBuffer engine::rec(uint32_t imageIndex){
+VkCommandBuffer Engine::rec(uint32_t imageIndex){
 clearValues[0].color                          = {0.0f,0.0f,0.0f,1.0f};
 clearValues[1].depthStencil                   = {1.0f, 0}; // 깊이 초기화 값
 renderPassInfos[imageIndex].sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-renderPassInfos[imageIndex].renderPass        = renderPass->get();
+renderPassInfos[imageIndex].renderPass        = renderPass->buildSysForwardPass ();
 renderPassInfos[imageIndex].framebuffer       = frameBufferManager->get(imageIndex);
 renderPassInfos[imageIndex].renderArea.offset = {0, 0};
 renderPassInfos[imageIndex].renderArea.extent = swapchain->getExtent();
@@ -78,7 +78,7 @@ return command;
 }
 
 
-void engine::summitQueue(VkCommandBuffer command, uint32_t imageIndex){
+void Engine::summitQueue(VkCommandBuffer command, uint32_t imageIndex){
 commandBufferManager->endRecord(imageIndex);
 VkSubmitInfo submitInfo{};
 submitInfo.sType                           = VK_STRUCTURE_TYPE_SUBMIT_INFO;
