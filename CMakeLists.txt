@@ -35,7 +35,7 @@ add_executable(exe
         source/core/ui_renderer_draw_state.cpp
 
 
-        source/resource/descriptorPool.cpp
+        source/resource/descriptor_pool.cpp
         source/resource/shader_module.cpp
         source/resource/buffer.cpp
         source/model/texture.cpp
@@ -52,9 +52,13 @@ add_executable(exe
         extern/imgui/imgui_tables.cpp
         extern/imgui/imgui_widgets.cpp
         extern/imgui/back/imgui_impl_vulkan.cpp
+
         source/renderer/renderpass.cpp
         source/resource/command_pool.cpp
         source/resource/semaphore.cpp
+        source/resource/fence.cpp
+        source/resource/sampler_pool.cpp
+
 )
 find_package(spdlog REQUIRED)
 find_package(assimp REQUIRED)

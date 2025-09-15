@@ -11,7 +11,7 @@
 #include  <swapChain.hpp>
 #include  <surface.hpp>
 #include  <mesh.hpp>
-#include  <sampler.hpp>
+#include <../resource/sampler_pool.hpp>
 #include  <texture.hpp>
 #include  <asset_manager.hpp>
 #include  <semaphore.hpp>
@@ -22,8 +22,8 @@ struct Program{
   const char *vert;
   const char *frag;
 };
-
-//renderer create structure
+// system renderer -> hard code base
+// system must expectable
 struct rendererCreateInfo{
   GLFWwindow *window;
   LogicalDevice *logicalDevice;

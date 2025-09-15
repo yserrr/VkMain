@@ -1,7 +1,7 @@
 #include<asset_manager.hpp>
 
 void AssetManager::setTexture(){
-    sampler= std::make_unique<Sampler> (device);
+    sampler= std::make_unique<SamplerPool> (device);
     textureCreateInfo  textureInfo; 
     textureInfo.device    =device; 
     textureInfo.sampler   = sampler->get(); 

@@ -2,7 +2,7 @@
 #define ENGINE_HPP
 
 #include  <common.hpp>
-#include  <ImporterEx.hpp>
+#include  <Importer.hpp>
 #include  <instance.hpp>
 #include  <logicalDevice.hpp>
 #include  <physicalDevice.hpp>
@@ -96,7 +96,7 @@ private:
 // 동기화 객체 (device 이후 생성)
   std::unique_ptr<SemaphorePool> imageAvailableSemaphores;
   std::unique_ptr<SemaphorePool> renderFinishedSemaphores;
-  std::unique_ptr<FenceManager> inFlightFences;
+  std::unique_ptr<FencePool> inFlightFences;
 
 // 기타
   std::vector<VkRenderPassBeginInfo> renderPassInfos;

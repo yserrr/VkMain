@@ -49,3 +49,53 @@ void UIRenderer::colorPickerColor()
   }
   ImGui::End();
 }
+
+
+/// todo : imple this options 
+void UIRenderer::drawLightUI(ImVec2 size)
+{
+  ImGui::SetNextWindowPos(ImVec2(20, 300), ImGuiCond_Always);
+  ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowSize(size, ImGuiCond_Once);
+  if (ImGui::Begin("Light setting", nullptr, ImGuiWindowFlags_NoMove))
+  {
+    //cpu::light light{};
+    ImGui::Button("light : Position ");
+    ImGui::Button("light : Direction");
+    ImGui::Button("light : Color ");
+  }
+  ImGui::End();
+}
+
+void UIRenderer::drawCameraUI()
+{
+  if (ImGui::Begin("Light setting", nullptr, ImGuiWindowFlags_NoMove))
+  {
+    ImGui::Button("light : Position ");
+    ImGui::Button("light : Direction");
+    ImGui::Button("light : Color ");
+  }
+  ImGui::End();
+}
+
+void UIRenderer::drawMaterialUI()
+{
+  if (ImGui::Begin("Light setting", nullptr, ImGuiWindowFlags_NoMove))
+  {
+    ImGui::Button("light : Position ");
+    ImGui::Button("light : Direction");
+    ImGui::Button("light : Color ");
+  }
+  ImGui::End();
+}
+
+void UIRenderer::drawShaderUI()
+{
+  if (ImGui::Begin("Light setting", nullptr, ImGuiWindowFlags_NoMove))
+  {
+    ImGui::Button("light : Position ");
+    ImGui::Button("light : Direction");
+    ImGui::Button("light : Color ");
+  }
+  ImGui::End();
+}

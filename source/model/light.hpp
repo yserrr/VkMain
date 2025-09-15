@@ -5,15 +5,11 @@
 #ifndef LIGHT_HPP 
 #define LIGHT_HPP
 
-//setting light model for rendering  :
-//pbr or phong or rendering
-//after , make uniform for type
 enum class LightType {
     Directional= 0,
     Point       =1,
     Spot        =2 
 };
-//CPU LIGHT;
 struct Light{ 
 glm::vec3 position;  // for point/spot
 int type;            // casted from LightType
@@ -30,9 +26,8 @@ struct GPULight {
 };
 
 struct lightUBO {
-    GPULight lights[MAX_LIGHTS]; // . 16개
-    alignas(16) int lightCount;  // 4 bytes + 12 bytes padding
-    // 총: 768 + 16 = 784 bytes
+    GPULight lights[MAX_LIGHTS];
+    alignas(16) int lightCount;
 };
 
 

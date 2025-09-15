@@ -149,7 +149,7 @@ void Engine::createSignals()
   signalInfo.MAX_FRAMES_IN_FLIGHT = MAX_FRAMES_IN_FLIGHT;
   imageAvailableSemaphores        = std::make_unique<SemaphorePool>(signalInfo);
   renderFinishedSemaphores        = std::make_unique<SemaphorePool>(signalInfo);
-  inFlightFences                  = std::make_unique<FenceManager>(signalInfo, true);
+  inFlightFences                  = std::make_unique<FencePool>(signalInfo, true);
   spdlog::info("create fence and semaphore");
 }
 

@@ -150,4 +150,46 @@ struct AnimationClip{
   std::vector<NodeAnim> channels;
 };
 
+enum class TexUsage : uint32_t{
+  ALBEDO,
+  NORMAL,
+  METAILIC,
+  ROUGHNESS,
+  AO,
+  EMISSIVE,
+};
+
+struct TextureDesc{
+  std::string path;
+  int embeddedIndex = -1;
+  TexUsage flag;
+};
+
+enum TexCreateFlags : uint32_t{
+  TexFlag_None         = 0x00000000,
+  TexFlag_GenerateMips = 0x00000001,
+  TexFlag_FlipYOnLoad  = 0x00000002,
+  TexFlag_ForceRGBA8   = 0x00000004,
+  TexFlag_OwnSampler   = 0x00000008,
+};
+
+struct ImportResult{
+  std::vector<MeshDesc> meshes;
+  std::vector<MaterialDesc> materials;
+  std::vector<TextureDesc> textures;
+  std::vector<NodeDesc> nodes; // 0번이 루트
+  std::vector<AnimationClip> animations;
+  std::vector<LightDesc> lights;
+  std::vector<CameraDesc> cameras;
+
+  struct EmbeddedTex{
+    std::string name;
+    const uint8_t *data;
+    size_t size;
+    bool isCompressed;
+  };
+
+  std::vector<EmbeddedTex> embedded;
+};
+
 #endif //MYPROJECT_IMPORT_DESC_HPP

@@ -11,7 +11,7 @@
 class ImporterEx {
 public:
     ImporterEx(){}
-    //mesh들고옴
+
     Mesh loadModel(const char* filepath, MemoryAllocator &allocator) 
     {
         Assimp::Importer importer;

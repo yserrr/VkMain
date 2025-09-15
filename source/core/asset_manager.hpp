@@ -5,7 +5,7 @@
 #include <logicalDevice.hpp>
 #include <common.hpp> 
 #include <descriptorPoolManager.hpp>
-#include <ImporterEx.hpp>
+#include <Importer.hpp>
 #include <material.hpp>
 #include <camera.hpp>
 #ifndef ASSETMANAGER_HPP
@@ -39,7 +39,7 @@ ImporterEx*                             importer;
 private:
 VkDevice                              device;
 MemoryAllocator&                      allocator;
-std::unique_ptr<Sampler>              sampler;
+std::unique_ptr<SamplerPool>              sampler;
 std::shared_ptr<Texture>              texture;
 std::shared_ptr<Texture>              nomal;
 

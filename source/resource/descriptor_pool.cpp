@@ -1,4 +1,4 @@
-#include <descriptorPool.hpp> 
+#include <descriptor_pool.hpp> 
 
 VkDescriptorSet DescriptorPool::allocateSet(){ 
 VkDescriptorSetAllocateInfo allocInfo = {};
