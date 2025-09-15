@@ -1,9 +1,13 @@
-
 cmake_minimum_required(VERSION 3.10)
 project(MyProject CXX)
+project(MyProject LANGUAGES C CXX)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
 
+set(SOURCE_DIR ${CMAKE_SOURCE_DIR}/source)
+set(EXTERN_DIR ${CMAKE_SOURCE_DIR}/extern)
+set(KTX ${EXTERN_DIR}/ktx/lib)
 include_directories(${CMAKE_SOURCE_DIR}/source/resource)
 include_directories(${CMAKE_SOURCE_DIR}/source/renderer)
 include_directories(${CMAKE_SOURCE_DIR}/source/model)
@@ -21,6 +25,23 @@ find_package(Vulkan REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SHADERC_PC REQUIRED shaderc)
 
+add_definitions(-DKTX_USE_KHRONOS_API_VULKAN=1)
+add_library(ktx STATIC
+        ${KTX}/checkheader.c
+        ${KTX}/errstr.c
+        ${KTX}/etcunpack.cxx
+        ${KTX}/filestream.c
+        ${KTX}/hashlist.c
+        ${KTX}/hashtable.c
+        ${KTX}/memstream.c
+        ${KTX}/swap.c
+        ${KTX}/texture.c
+        ${KTX}/vk_funcs.c
+        ${KTX}/writer.c
+        ${KTX}/writer_v1.c
+)
+
+set_target_properties(ktx PROPERTIES LINKER_LANGUAGE C)
 add_executable(exe
         main.cpp
 
@@ -76,4 +97,5 @@ target_link_libraries(exe
         spdlog::spdlog
         assimp::assimp
         shaderc
+        ktx
 )
