@@ -189,9 +189,6 @@ VkExtent2D EventManager::getExtent()
 {
   return currentExtent;
 }
-
-
-
 //callback
 void EventManager::keyCallbackWrapper(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
