@@ -1,6 +1,7 @@
 #ifndef RENDERPASS_HPP
 #define RENDERPASS_HPP
 #include "common.hpp"
+
 struct RenderPassCreateInfo{
   VkDevice device;
   VkFormat colorFormat;
@@ -18,12 +19,12 @@ struct RenderPassInfo{
   std::vector<VkSubpassDependency> dependencies;
 };
 
-//legacy -> simple pass only cover;
+//legacy -> simple pass only ;
 class RenderPassPool{
 public:
   RenderPassPool(RenderPassCreateInfo &info);
   ~RenderPassPool();
-  VkRenderPass buildSysForwardPass();
+  VkRenderPass buildForwardPass();
   VkRenderPass buildImGuiOnlyPass();
 
 private:

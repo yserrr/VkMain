@@ -45,7 +45,7 @@ void Texture::uploadDescriptor(VkDescriptorSet set)
   VkWriteDescriptorSet descriptorWrite{};
   descriptorWrite.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
   descriptorWrite.dstSet          = set;
-  descriptorWrite.dstBinding      = 0; // bindingIndex; // shader에서의 binding 번호
+  descriptorWrite.dstBinding      = 1; // bindingIndex; // shader에서의 binding 번호
   descriptorWrite.dstArrayElement = 0;
   descriptorWrite.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
   descriptorWrite.descriptorCount = 1;

@@ -1,11 +1,11 @@
-#include<sys_renderer.hpp>
+#include<renderer.hpp>
 
 void SysRenderer::createPipeline(std::vector<VkDescriptorSetLayout> *layout_h)
 {
   fragShader           = std::make_unique<ShaderModule>(device_h);
   vertShader           = std::make_unique<ShaderModule>(device_h);
-  std::string fragPath = "/home/ljh/CLionProjects/VkMain/source/shader/sys_fragment.frag";
-  std::string vertPath = "/home/ljh/CLionProjects/VkMain/source/shader/sys_vertex.vert";
+  std::string fragPath = "/home/ljh/CLionProjects/VkMain/source/shader/fragment.frag";
+  std::string vertPath = "/home/ljh/CLionProjects/VkMain/source/shader/vertex.vert";
   fragShader->setShader(fragPath, shaderc_fragment_shader);
   vertShader->setShader(vertPath, shaderc_vertex_shader);
 

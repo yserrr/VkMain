@@ -1,14 +1,10 @@
-//
-// Created by ljh on 25. 9. 15..
-//
 
 #include "renderpass.hpp"
 
+RenderPassPool::RenderPassPool(RenderPassCreateInfo &info) : device(info.device),
+                                                             sysForwardPass_(VK_NULL_HANDLE),
+                                                             colorFormat(info.colorFormat) {};
 
-
-RenderPassPool::RenderPassPool(RenderPassCreateInfo& info) : device(info.device),
-                                                     sysForwardPass_(VK_NULL_HANDLE),
-                                                     colorFormat(info.colorFormat){};
 RenderPassPool::~RenderPassPool()
 {
   if (sysForwardPass_ != VK_NULL_HANDLE)
@@ -17,9 +13,8 @@ RenderPassPool::~RenderPassPool()
   }
 }
 
-VkRenderPass RenderPassPool::buildSysForwardPass()
+VkRenderPass RenderPassPool::buildForwardPass()
 {
-  // 1. Color Attachment
   VkAttachmentDescription colorAttachment{};
   colorAttachment.format         = colorFormat;
   colorAttachment.samples        = VK_SAMPLE_COUNT_1_BIT;
@@ -29,17 +24,17 @@ VkRenderPass RenderPassPool::buildSysForwardPass()
   colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
   colorAttachment.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
   colorAttachment.finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-//UI SubPass
+
   VkAttachmentDescription UI{};
   UI.format         = colorFormat;
   UI.samples        = VK_SAMPLE_COUNT_1_BIT;
-  UI.loadOp         = VK_ATTACHMENT_LOAD_OP_LOAD; // Clear 화면
+  UI.loadOp         = VK_ATTACHMENT_LOAD_OP_LOAD;
   UI.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
   UI.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
   UI.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
   UI.initialLayout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
   UI.finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-//depth attchment
+
   VkAttachmentDescription depthAttachment{};
   depthAttachment.format         = VK_FORMAT_D32_SFLOAT;
   depthAttachment.samples        = VK_SAMPLE_COUNT_1_BIT;
@@ -119,32 +114,27 @@ VkRenderPass RenderPassPool::buildSysForwardPass()
   {
     throw std::runtime_error("failed to create render pass!");
   }
-  return  sysForwardPass_;
+  return sysForwardPass_;
 }
 
 VkRenderPass RenderPassPool::buildImGuiOnlyPass()
 {
-// 1. Color Attachment
-//UI SubPass
   VkAttachmentDescription UI{};
   UI.format         = colorFormat;
   UI.samples        = VK_SAMPLE_COUNT_1_BIT;
-  UI.loadOp         = VK_ATTACHMENT_LOAD_OP_LOAD; // Clear 화면
+  UI.loadOp         = VK_ATTACHMENT_LOAD_OP_LOAD;
   UI.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
   UI.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
   UI.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
   UI.initialLayout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
   UI.finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-// UI Subpass color ref (같은 attachment 0)
   VkAttachmentReference uiColorAttachmentRef{};
   uiColorAttachmentRef.attachment = 0;
   uiColorAttachmentRef.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
   std::array<VkAttachmentDescription, 1> attachments = {UI};
-
-// Subpass 1 : UI (depth attachment 없음)
-  VkSubpassDescription uiSubpass{};
+  VkSubpassDescription                   uiSubpass{};
   uiSubpass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
   uiSubpass.colorAttachmentCount    = 1;
   uiSubpass.pColorAttachments       = &uiColorAttachmentRef;
@@ -159,7 +149,6 @@ VkRenderPass RenderPassPool::buildImGuiOnlyPass()
   dependencies[0].dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
   dependencies[0].dependencyFlags = 0;
 
-// RenderPass CreateInfo
   VkRenderPassCreateInfo renderPassInfo{};
   renderPassInfo.sType                          = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
   renderPassInfo.attachmentCount                = 1;
@@ -169,7 +158,7 @@ VkRenderPass RenderPassPool::buildImGuiOnlyPass()
   renderPassInfo.pSubpasses                     = subpasses.data();
   renderPassInfo.dependencyCount                = static_cast<uint32_t>(dependencies.size());
   renderPassInfo.pDependencies                  = dependencies.data();
-  VkRenderPass uiPass = VK_NULL_HANDLE;
+  VkRenderPass uiPass                           = VK_NULL_HANDLE;
   if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &uiPass) != VK_SUCCESS)
   {
     throw std::runtime_error("failed to create render pass!");

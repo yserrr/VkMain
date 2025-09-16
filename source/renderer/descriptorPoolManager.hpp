@@ -2,18 +2,16 @@
 #include<descriptor_pool.hpp>
 #ifndef DESCRIPTORPOOLMANAGER_HPP
 #define DESCRIPTORPOOLMANAGER_HPP
-#define CAM_MAX     5
-#define TEXTURE_MAX 5
-#define LIGHT_MAX   5
 
-//control descriptor layout for setting descriptor Pool
+#define CAM_MAX     8
+#define TEXTURE_MAX 1024
+#define LIGHT_MAX   128
+
 class DescriptorManager{
 public:
   DescriptorManager(VkDevice device)
     : device(device)
   {
-//create Descriptor Managers layout for vertex Stage
-//using uniform buffe to camera or global uniform
     VkDescriptorSetLayoutBinding descriptorLayoutBinding{};
     descriptorLayoutBinding.binding            = 0;
     descriptorLayoutBinding.descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -26,18 +24,26 @@ public:
     layoutInfo.pBindings    = &descriptorLayoutBinding;
     if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &vertexLayout) != VK_SUCCESS)
       throw std::runtime_error("failed to create descriptor set layout!");
-//for texture
-//using combined Image with sampler type
-    VkDescriptorSetLayoutBinding fragmentBinding{};
-    fragmentBinding.binding            = 0;
-    fragmentBinding.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    fragmentBinding.descriptorCount    = 1;
-    fragmentBinding.stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
-    fragmentBinding.pImmutableSamplers = nullptr;
+
+    std::vector<VkDescriptorSetLayoutBinding> fragmentBindings(2);
+    std::vector<VkDescriptorBindingFlags> bindingsFlags(2);
+    fragmentBindings[0].binding            = 0;
+    fragmentBindings[0].descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    fragmentBindings[0].descriptorCount    = 1024;
+    fragmentBindings[0].stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragmentBindings[0].pImmutableSamplers = nullptr;
+
+    fragmentBindings[1].binding            = 1;
+    fragmentBindings[1].descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    fragmentBindings[1].descriptorCount    = 1;
+    fragmentBindings[1].stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
+    fragmentBindings[1].pImmutableSamplers = nullptr;
+
     VkDescriptorSetLayoutCreateInfo fragInfo{};
     fragInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    fragInfo.bindingCount = 1;
-    fragInfo.pBindings    = &fragmentBinding;
+    fragInfo.bindingCount = fragmentBindings.size();
+    fragInfo.pBindings    = fragmentBindings.data();
+
     if (vkCreateDescriptorSetLayout(device, &fragInfo, nullptr, &textureLayout) != VK_SUCCESS)
       throw std::runtime_error("failed to create descriptor set layout!");
 //light material : set 0 , biniding 1

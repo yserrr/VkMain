@@ -16,6 +16,12 @@ include_directories(${CMAKE_SOURCE_DIR}/source/core)
 include_directories(${CMAKE_SOURCE_DIR}/extern)
 include_directories(${CMAKE_SOURCE_DIR}/extern/imgui)
 include_directories(${CMAKE_SOURCE_DIR}/extern/imgui)
+
+include_directories(${CMAKE_SOURCE_DIR}/extern/ktx/lib)
+include_directories(${CMAKE_SOURCE_DIR}/extern/ktx/include)
+include_directories(${CMAKE_SOURCE_DIR}/extern/ktx/other_include)
+
+
 include_directories(${CMAKE_SOURCE_DIR}/extern/imgui/back)
 include_directories(${CMAKE_SOURCE_DIR}/extern/imgui/back)
 
@@ -46,8 +52,9 @@ add_executable(exe
         main.cpp
 
         source/core/engine.cpp
-        source/core/engineInit.cpp
-        source/core/draw.cpp
+        source/core/engine_init.cpp
+        source/core/engine_vk_load.cpp
+        source/core/renderer_draw.cpp
         source/core/asset_setup.cpp
         source/core/event_manager.cpp
 

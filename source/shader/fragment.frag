@@ -17,7 +17,9 @@ struct GPULight {
 };
 layout(location = 0) in  vec2 fragTexCoord;
 layout(location = 0) out vec4 outColor;
-layout(set = 1 , binding  = 0 ) uniform sampler2D myTexture;
+
+layout(set = 1 , binding  = 0) uniform sampler2D bindlessTexture[];
+layout(set = 1 , binding  = 1) uniform sampler2D myTexture;
 layout(std140, set = 2 , binding  = 0 ) uniform LightBuffer {
     GPULight lights[16];
     int lightCount;
@@ -37,6 +39,9 @@ void main() {
     float attenuation = 1.0 / (1.0 + 0.09 * distance + 0.032 * distance * distance);
     intensity = max(dot(normal, lightDir), 0.0) * attenuation;
     vec3 resultColor = light.color.rgb * light.color.a * intensity;
+    if(resultColor ==vec3(0.0f, 0.0f,0.09) ){
+      resultColor= vec3(0.5f);
+    }
     outColor = vec4(texColor.rgb * resultColor, texColor.a);
 
     //for (int i = 0; i < lightCount; ++i) {

@@ -2,9 +2,9 @@
 //
 Engine::~Engine()
 {
-  if (device->get() != VK_NULL_HANDLE) vkDestroyDevice(device->get(), nullptr);
-  if (surface->get() != VK_NULL_HANDLE) vkDestroySurfaceKHR(instance->get(), surface->get(), nullptr);
-  if (instance->get() != VK_NULL_HANDLE) vkDestroyInstance(instance->get(), nullptr);
+  if (device_h != VK_NULL_HANDLE) vkDestroyDevice(device_h, nullptr);
+  if (surface_h != VK_NULL_HANDLE) vkDestroySurfaceKHR(instance_h, surface_h, nullptr);
+  if (instance_h != VK_NULL_HANDLE) vkDestroyInstance(instance_h, nullptr);
 }
 
 void Engine::initialize()
@@ -20,36 +20,12 @@ void Engine::initialize()
   asset->uploadDescriptors(sets);
 }
 
-//vulkan resource
-//get handler only
-void Engine::initVulkan()
-{
-  window            = std::make_unique<Window>(extent, title);
-  window_h          = window->get();
-  instance          = std::make_unique<Instance>();
-  instance_h        = instance->get();
-  surface           = std::make_unique<Surface>(instance_h, window_h);
-  surface_h         = surface->get();
-  physicalDevice    = std::make_unique<PhysicalDevice>(instance_h, surface_h);
-  physical_device_h = physicalDevice->get();
-  device            = std::make_unique<LogicalDevice>(physical_device_h, surface_h);
-  device_h          = device->get();
-  graphics_family   = device->getGraphicsFamily();
-  present_family    = device->getPresentFamily();
-  graphics_q        = device->getGraphicsQueue();
-  present_q         = device->getPresentQueue();
-  allocator         = std::make_unique<MemoryAllocator>(physical_device_h, device_h);
-  interaction       = std::make_unique<EventManager>(window_h);
-}
-
-//asset and renderer allcoate
 void Engine::initAsset()
 {
   assetCreateInfo assetInfo;
   assetInfo.device    = device_h;
   assetInfo.allocator = allocator.get();
-//asset 생성
-  asset = std::make_unique<AssetManager>(assetInfo);
+  asset               = std::make_unique<AssetManager>(assetInfo);
   asset->setCamera(extent);
   asset->setTexture();
   asset->setLight();
@@ -74,8 +50,8 @@ void Engine::createSwapchain()
   swapchainInfo.device         = device_h;
   swapchainInfo.physicalDevice = physical_device_h;
   swapchainInfo.surface        = surface_h;
-  swapchainInfo.graphicsFamily = device->getGraphicsFamily();
-  swapchainInfo.presentFamily  = device->getPresentFamily();
+  swapchainInfo.graphicsFamily = graphics_family;
+  swapchainInfo.presentFamily  = present_family;
   swapchainInfo.windowExtent   = extent;
   swapchainInfo.allocator      = allocator.get();
   swapchain                    = std::make_unique<Swapchain>(swapchainInfo);
@@ -124,7 +100,7 @@ void Engine::createRenderPass()
   renderpassInfo.device      = device_h;
   renderpassInfo.colorFormat = imageformat_h;
   renderPass                 = std::make_unique<RenderPassPool>(renderpassInfo);
-  renderpass_h               = renderPass->buildSysForwardPass();
+  renderpass_h               = renderPass->buildForwardPass();
   spdlog::info("create RenderPass");
 }
 
@@ -165,15 +141,15 @@ void Engine::initRender()
 {
   spdlog::info("init renderer");
   rendererCreateInfo renderinfo{};
-  renderinfo.window        = window_h;
-  renderinfo.logicalDevice = device.get();
-  renderinfo.allocator     = allocator.get();
-  renderinfo.extent        = extent;
-  renderinfo.asset         = asset.get();
-  renderinfo.swapchain     = swapchain.get();
-  renderinfo.imageManager  = imageManager.get();
-  renderinfo.renderPass    = renderpass_h;
-  sceneRenderer            = std::make_unique<SysRenderer>(renderinfo);
+  renderinfo.window       = window_h;
+  renderinfo.device_h     = device_h;
+  renderinfo.allocator    = allocator.get();
+  renderinfo.extent       = extent;
+  renderinfo.asset        = asset.get();
+  renderinfo.swapchain    = swapchain.get();
+  renderinfo.imageManager = imageManager.get();
+  renderinfo.renderPass   = renderpass_h;
+  sceneRenderer           = std::make_unique<SysRenderer>(renderinfo);
   sceneRenderer->createPipeline((descriptorManager->getLayouts()));
   pipeline_layout_h = sceneRenderer->getPipelineLayout();
 }

@@ -3,17 +3,14 @@
 
 #include  <common.hpp>
 #include  <Importer.hpp>
-#include  <instance.hpp>
 #include  <logicalDevice.hpp>
 #include  <physicalDevice.hpp>
-#include  <surface.hpp>
-#include  <window.hpp>
 #include  <mesh.hpp>
-#include  <sys_renderer.hpp>
+#include  <renderer.hpp>
 #include  <ui_renderer.hpp>
 #include  <event_manager.hpp>
 #include  <asset_manager.hpp>
-#include  <interface.hpp>
+#include "engine_vk_context.hpp"
 
 class Engine{
 public:
@@ -60,10 +57,11 @@ private:
   VkCommandPool command_pool_h;
   VkQueue present_q;
   VkQueue graphics_q;
-  VkPipelineLayout pipeline_layout_h;
-//queue index :
   uint32_t graphics_family;
   uint32_t present_family;
+  VkPipelineLayout pipeline_layout_h;
+
+//queue index :
   double lastFrameTime;
 //signals for synchonize and context
   uint32_t currentFrame         = 0;
@@ -72,12 +70,6 @@ private:
   uint64_t timeout; //similar with float
   uint32_t imageIndex;
 //renderer
-// 가장 낮은 의존성 (가장 먼저 생성, 가장 늦게 파괴되어야 하는 것)
-  std::unique_ptr<Window> window;
-  std::unique_ptr<Instance> instance;
-  std::unique_ptr<Surface> surface;
-  std::unique_ptr<PhysicalDevice> physicalDevice;
-  std::unique_ptr<LogicalDevice> device;
   std::unique_ptr<Swapchain> swapchain;
   std::unique_ptr<ImageViewManager> imageManager;
   std::unique_ptr<RenderPassPool> renderPass;

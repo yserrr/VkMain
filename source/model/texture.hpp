@@ -4,7 +4,8 @@
 #include <../resource/sampler_pool.hpp>
 #include <stb_image.h>
 #include <buffer.hpp>
-
+#include <ktx/include/ktx.h>
+#include <ktx/include/ktxvulkan.h>
 struct textureCreateInfo{
 VkDevice               device; 
 VkSampler              sampler;
