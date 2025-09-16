@@ -2,7 +2,7 @@
 #define RENDERPASS_HPP
 #include "common.hpp"
 
-struct RenderPassCreateInfo{
+struct RenderPassPoolCreateInfo{
   VkDevice device;
   VkFormat colorFormat;
 };
@@ -22,7 +22,7 @@ struct RenderPassInfo{
 //legacy -> simple pass only ;
 class RenderPassPool{
 public:
-  RenderPassPool(RenderPassCreateInfo &info);
+  RenderPassPool(RenderPassPoolCreateInfo &info);
   ~RenderPassPool();
   VkRenderPass buildForwardPass();
   VkRenderPass buildImGuiOnlyPass();

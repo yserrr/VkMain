@@ -1,4 +1,4 @@
-#include "semaphore.hpp"
+#include "semaphore_pool.hpp"
 
 SemaphorePool::SemaphorePool(SignalCreateInfo &info) :
   device(info.device),

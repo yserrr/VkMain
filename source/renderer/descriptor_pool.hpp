@@ -1,8 +1,8 @@
 #ifndef DESCRIPTORPOOL_HPP
 #define DESCRIPTORPOOL_HPP
 
-
 #include<common.hpp>
+
 ///after must make virtual class
 enum class descriptorType{
   Texture,
@@ -12,7 +12,7 @@ enum class descriptorType{
 
 class DescriptorPool{
 public:
-  DescriptorPool(VkDevice device,
+  DescriptorPool(VkDevice              device,
                  VkDescriptorSetLayout layout)
     : device(device),
       layout(layout),
@@ -24,8 +24,7 @@ public:
       vkDestroyDescriptorPool(device, descriptorPool, nullptr);
   }
 
-// Set 할당 시 내부에서 vector에 저장 및 관리
-  virtual void createPool(uint32_t count) = 0;
+  virtual void    createPool(uint32_t count) = 0;
   VkDescriptorSet allocateSet();
 
   VkDescriptorPool getDescriptorPool() const
@@ -43,11 +42,11 @@ public:
     return allocatedSets.at(index);
   }
 
-protected: //상속 대상이 접근 가능해야함
+protected:
   std::vector<VkDescriptorSet> allocatedSets;
-  VkDevice device;
-  VkDescriptorPool descriptorPool;
-  VkDescriptorSetLayout layout;
+  VkDevice                     device;
+  VkDescriptorPool             descriptorPool;
+  VkDescriptorSetLayout        layout;
 };
 
 class CameraDescriptorPool : public DescriptorPool{

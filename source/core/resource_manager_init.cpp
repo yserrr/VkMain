@@ -1,16 +1,17 @@
-#include<asset_manager.hpp>
+#include<resource_manager.hpp>
 
-void AssetManager::setTexture(){
-    sampler= std::make_unique<SamplerPool> (device);
+void ResourceManager::setTexture(){
+    sampler= std::make_unique<SamplerBuilder> (device);
     textureCreateInfo  textureInfo; 
     textureInfo.device    =device; 
-    textureInfo.sampler   = sampler->get(); 
+    textureInfo.sampler   = sampler->get();
+    std::string texturePath = std::string(ASSET_TEXTURES_DIR)+ "/sampleroom.gltf";
     textureInfo.filename  = "/home/ljh/CLionProjects/VkMain/extern/externModel/hand/texture/HAND_C.jpg";
     textureInfo.allocator = &allocator;
-    texture= std::make_shared<Texture> (textureInfo);
+    texture= std::make_shared<VulkanTexture> (textureInfo);
 }
 
-void AssetManager::setLight(){ 
+void ResourceManager::setLight(){
     lightManager = std::make_unique<LightManager> (device, allocator);
     Light light ;
     light.position = glm::vec3(1.0,1.0,2.0); 
@@ -30,17 +31,21 @@ void AssetManager::setLight(){
     spdlog::info("add lights");
 }
 
-void AssetManager::setCamera(VkExtent2D extent){ 
+Camera * ResourceManager::getCamera() {
+  return camera.get();
+}
+
+void ResourceManager::setCamera(VkExtent2D extent){
     camCreateInfo camInfo{}; 
-    camInfo.fov         = glm::radians(45.0f); 
+    camInfo.fov         = glm::radians(45.0f);
     camInfo.aspectRatio = static_cast<float>(extent.width) / static_cast<float>(extent.height);
     camInfo.nearPlane = 0.1f; 
-    camInfo.farPlane  = 300.0; 
+    camInfo.farPlane  = 10000.0;
     camInfo.allocator = &allocator;
     camera= std::make_unique<Camera> (camInfo);
 }
 
-void AssetManager::uploadDescriptors(std::array<VkDescriptorSet,3> sets){
+void ResourceManager::uploadDescriptors(std::array<VkDescriptorSet,3> sets){
     //all layout 0 
     spdlog::info("write descriptor Set");
     camera      ->uploadDescriptor(sets.at(0));
@@ -50,9 +55,10 @@ void AssetManager::uploadDescriptors(std::array<VkDescriptorSet,3> sets){
 }
 
 //mesh and texture buffer -> copy stage to Gpu
-void AssetManager::setUp(VkCommandBuffer command){
+void ResourceManager::setUp(VkCommandBuffer command){
     importer= new ImporterEx();
-    Mesh temp = importer->loadModel("/home/ljh/CLionProjects/VkMain/extern/externModel/hand/hand.fbx", allocator) ;
+    std::string modelPath = std::string(ASSET_MODELS_DIR)+ "/deer.gltf";
+    Mesh temp = importer->loadModel(modelPath.c_str(), allocator) ;
     delete importer;
     mesh= std::make_unique<Mesh> (temp.getVertices(),temp.getIndices(),allocator);
     mesh->copyBuffer(command);

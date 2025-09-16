@@ -1,13 +1,12 @@
 #include <common.hpp>
 #include <swapChain.hpp>
-#include <framebuffer.hpp>
-#include <commandBuffer.hpp>
+#include <frame_pool.hpp>
+#include <command_pool_manager.hpp>
 #include <renderpass.hpp>
 #include <pipeline.hpp>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
-#include <logicalDevice.hpp>
 #ifndef UIRENDERER_HPP
 #define UIRENDERER_HPP
 

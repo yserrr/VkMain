@@ -6,18 +6,18 @@
 #ifndef GRAPHICSPIPELINE_HPP
 #define GRAPHICSPIPELINE_HPP 
 
-struct pipelineCreateInfo{
-  VkDevice device;
-  VkExtent2D extent;
-  VkRenderPass renderPass;
-  VkShaderModule vertShaderModule;
-  VkShaderModule fragShaderModule;
+struct PipelineCreateInfo{
+  VkDevice                                  device;
+  VkExtent2D                                extent;
+  VkRenderPass                              renderPass;
+  VkShaderModule                            vertShaderModule;
+  VkShaderModule                            fragShaderModule;
   const std::vector<VkDescriptorSetLayout> *descriptorSetLayouts;
 };
 
 class GraphicsPipeline{
 public:
-  GraphicsPipeline(const pipelineCreateInfo &info)
+  GraphicsPipeline(const PipelineCreateInfo &info)
     : device(info.device)
   {
 // 1. 셰이더 스테이지
@@ -127,22 +127,26 @@ public:
                                           VK_COLOR_COMPONENT_A_BIT;
     colorBlendAttachment.blendEnable = VK_FALSE;
     VkPipelineColorBlendStateCreateInfo colorBlending{};
-    colorBlending.sType            = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-    colorBlending.attachmentCount  = 1;
-    colorBlending.pAttachments     = &colorBlendAttachment;
-    VkDynamicState dynamicStates[] = {
+    colorBlending.sType           = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+    colorBlending.attachmentCount = 1;
+    colorBlending.pAttachments    = &colorBlendAttachment;
+
+    std::vector<VkDynamicState> dynamicStates = {
     VK_DYNAMIC_STATE_VIEWPORT,
-    VK_DYNAMIC_STATE_SCISSOR
+    VK_DYNAMIC_STATE_SCISSOR,
+    VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE,
+    VK_DYNAMIC_STATE_POLYGON_MODE_EXT
     };
     VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
     dynamicStateInfo.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicStateInfo.dynamicStateCount = 2;
-    dynamicStateInfo.pDynamicStates    = dynamicStates;
-//descriptorPool Manager 에서 관리
+    dynamicStateInfo.dynamicStateCount = dynamicStates.size() ;
+    dynamicStateInfo.pDynamicStates    = dynamicStates.data();
+
+    //descriptorPool Manager 에서 관리
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = info.descriptorSetLayouts->size();
-    pipelineLayoutInfo.pSetLayouts    = info.descriptorSetLayouts->data(); // <- 여기 필수
+    pipelineLayoutInfo.pSetLayouts    = info.descriptorSetLayouts->data();
     if (vkCreatePipelineLayout(info.device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
     {
       throw std::runtime_error("failed to create pipeline layout!");
@@ -163,6 +167,7 @@ public:
     pipelineInfo.layout              = pipelineLayout;
     pipelineInfo.renderPass          = info.renderPass;
     pipelineInfo.subpass             = 0;
+
     if (vkCreateGraphicsPipelines(info.device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) !=
         VK_SUCCESS)
     {
@@ -188,8 +193,8 @@ public:
   }
 
 private:
-  VkDevice device;
-  VkPipeline graphicsPipeline;
+  VkDevice         device;
+  VkPipeline       graphicsPipeline;
   VkPipelineLayout pipelineLayout;
 };
 

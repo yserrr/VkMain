@@ -22,7 +22,7 @@
 #include<spdlog/spdlog.h>
 #include<glm/glm.hpp>
 //commmon
-#include<memoryAllocator.hpp>
+#include<memory_allocator.hpp>
 
 #define VK_NULL_HANDLE nullptr
 #define VK_VALID(handle) ((handle)!= VK_NULL_HANDLE)

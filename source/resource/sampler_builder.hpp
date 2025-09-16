@@ -20,18 +20,18 @@ struct SamplerDesc{
   VkCompareOp compareOp          = VK_COMPARE_OP_LESS_OR_EQUAL;
 };
 
-class SamplerPool{
+class SamplerBuilder{
 public:
-  SamplerPool(VkDevice device);
-  ~SamplerPool();
+  SamplerBuilder(VkDevice device);
+  ~SamplerBuilder();
   VkSampler get() const;
-  VkSampler createSampler(const SamplerDesc &desc);
+  VkSampler builderSampler(const SamplerDesc &desc);
 
 private:
   VkDevice device;
-  VkSampler sysSampler;
+  VkSampler dftSampler;
   std::vector<VkSampler> samplerPool_;
-  void createSysSampler();
+  void baseSampler();
 };
 
 #endif

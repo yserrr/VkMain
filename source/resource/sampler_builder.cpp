@@ -1,17 +1,17 @@
-#include "sampler_pool.hpp"
+#include "sampler_builder.hpp"
 #include <spdlog/spdlog.h>
 #include "common.hpp"
 
-SamplerPool::SamplerPool(VkDevice device) : device(device), sysSampler(VK_NULL_HANDLE)
+SamplerBuilder::SamplerBuilder(VkDevice device) : device(device), dftSampler(VK_NULL_HANDLE)
 {
-  createSysSampler();
+  baseSampler();
 }
 
-SamplerPool::~SamplerPool()
+SamplerBuilder::~SamplerBuilder()
 {
-  if (sysSampler != VK_NULL_HANDLE)
+  if (dftSampler != VK_NULL_HANDLE)
   {
-    vkDestroySampler(device, sysSampler, nullptr);
+    vkDestroySampler(device, dftSampler, nullptr);
   }
   for (VkSampler sampler: samplerPool_)
   {
@@ -22,12 +22,12 @@ SamplerPool::~SamplerPool()
   }
 }
 
-VkSampler SamplerPool::get() const
+VkSampler SamplerBuilder::get() const
 {
-  return sysSampler;
+  return dftSampler;
 }
 
-VkSampler SamplerPool::createSampler(const SamplerDesc &desc)
+VkSampler SamplerBuilder::builderSampler(const SamplerDesc &desc)
 {
   VkSamplerCreateInfo samplerInfo     = {};
   samplerInfo.sType                   = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -52,7 +52,7 @@ VkSampler SamplerPool::createSampler(const SamplerDesc &desc)
   return sampler;
 }
 
-void SamplerPool::createSysSampler()
+void SamplerBuilder::baseSampler()
 {
   spdlog::info("create sampler");
   VkSamplerCreateInfo samplerInfo{};
@@ -72,7 +72,7 @@ void SamplerPool::createSysSampler()
   samplerInfo.mipLodBias              = 0.0f;
   samplerInfo.minLod                  = 0.0f;
   samplerInfo.maxLod                  = VK_LOD_CLAMP_NONE;
-  if (vkCreateSampler(device, &samplerInfo, nullptr, &sysSampler) != VK_SUCCESS)
+  if (vkCreateSampler(device, &samplerInfo, nullptr, &dftSampler) != VK_SUCCESS)
   {
     throw std::runtime_error("Failed to create sampler!");
   }

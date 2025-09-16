@@ -2,19 +2,22 @@
 #define INTERACTION_HPP
 #include<common.hpp>
 #include<camera.hpp>
+#include"renderer.hpp"
+
 class SwapchainManager;
 
 class EventManager{
 public:
   EventManager(GLFWwindow *window);
-  void onKeyEvent(int key, int scancode, int action, int mods);
-  void setCamera(Camera *cam);
-  void setSwapchain(SwapchainManager *swapchainP);
-  bool isResized();
-  bool isMultiView();
+  void       onKeyEvent(int key, int scancode, int action, int mods);
+  void       setCamera(Camera *cam);
+  void       setSwapchain(SwapchainManager *swapchainP);
+  bool       isResized();
+  bool       isMultiView();
   VkExtent2D getExtent();
-  void getKey();
-  void wheelUpdate();
+  void       getKey();
+  void       wheelUpdate();
+  void setRenderer(SceneRenderer* renderer);
 
 private:
   static void keyCallbackWrapper(GLFWwindow *window, int key, int scancode, int action, int mods);
@@ -28,20 +31,20 @@ private:
   void getViewIndex(double w, double h);
 
 private:
-  Camera *mainCam;
-  GLFWwindow *window_;
+  Camera *          mainCam;
+  GLFWwindow *      window_;
   SwapchainManager *swapchain_;
-
-  double wheelDelta_    = 0;
-  bool muliiViews       = false;
-  bool resized          = false;
-  bool leftMousePressed = false;
-  float sensitivity     = 0.2f; // 마우스 이동 시 카메라 회전 속도 조절용
-  double lastX          = 0.0;
-  double lastY          = 0.0;
-  double lastActionTime;
-  bool mouseMoveState         = true;
+  SceneRenderer* renderer_;
+  double       wheelDelta_      = 0;
+  bool         muliiViews       = false;
+  bool         resized          = false;
+  bool         leftMousePressed = false;
+  float        sensitivity      = 0.05f; // 마우스 이동 시 카메라 회전 속도 조절용
+  double       lastX            = 0.0;
+  double       lastY            = 0.0;
+  double       lastActionTime;
+  bool         mouseMoveState = true;
   const double actionCooldown = 0.2; // 200ms
-  VkExtent2D  currentExtent;
+  VkExtent2D   currentExtent;
 };
 #endif //INTERACTION_HPP

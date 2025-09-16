@@ -53,12 +53,21 @@ inline void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT 
 
 /// only load functions
 
-void Engine::initVulkan()
+void Engine::vkDeviceload()
 {
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); //need to change
-  window_h = glfwCreateWindow(extent.width, extent.height, title, nullptr, nullptr);
+  window_h                   = glfwCreateWindow(extent.width, extent.height, title, nullptr, nullptr);
+  GLFWmonitor *      primary = glfwGetPrimaryMonitor();
+  const GLFWvidmode *mode    = glfwGetVideoMode(primary);
+
+  int winWidth  = extent.width;
+  int winHeight = extent.height;
+  int centerX   = (mode->width - winWidth) / 2;
+  int centerY   = (mode->height - winHeight) / 2;
+
+  glfwSetWindowPos(window_h, centerX, centerY);
 
   InstanceCreateInfo instance_info{};
   bool               enableValidation = instance_info.enableValidation;
@@ -125,7 +134,6 @@ void Engine::initVulkan()
   vkCreateInfo.ppEnabledExtensionNames = enableExtensions.data();
   vkCreateInfo.enabledExtensionCount   = static_cast<uint32_t>(enableExtensions.size());
 
-
   if (enableValidation)
   { //validation layer check
     uint32_t layerCount;
@@ -161,24 +169,22 @@ void Engine::initVulkan()
     VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfoLocal{};
     populateDebugMessengerCreateInfo(debugMessengerCreateInfoLocal);
     vkCreateInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT *) &debugMessengerCreateInfoLocal;
-    VkResult result = vkCreateInstance(&vkCreateInfo, nullptr, &instance_h);
+    VkResult result    = vkCreateInstance(&vkCreateInfo, nullptr, &instance_h);
     if (result != VK_SUCCESS)
     {
       spdlog::error("Failed to create VkInstance! Result: {}", static_cast<int>(result));
       throw std::runtime_error("Failed to create Vulkan instance!");
     }
-
   } else
   {
     vkCreateInfo.enabledLayerCount = 0;
     vkCreateInfo.pNext             = nullptr;
-    VkResult result = vkCreateInstance(&vkCreateInfo, nullptr, &instance_h);
+    VkResult result                = vkCreateInstance(&vkCreateInfo, nullptr, &instance_h);
     if (result != VK_SUCCESS)
     {
       spdlog::error("Failed to create VkInstance! Result: {}", static_cast<int>(result));
       throw std::runtime_error("Failed to create Vulkan instance!");
     }
-
   }
 
   spdlog::info("Vulkan Instance created successfully.");
@@ -216,9 +222,6 @@ void Engine::initVulkan()
   }
   VK_ASSERT(glfwCreateWindowSurface(instance_h, window_h, nullptr, &surface_h));
 
-
-
-
   uint32_t deviceCount = 0;
   vkEnumeratePhysicalDevices(instance_h, &deviceCount, nullptr);
 
@@ -245,6 +248,8 @@ void Engine::initVulkan()
     std::set<std::string> engineRequiredExtension = {
     VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+    VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME
+
     };
 
     for (const auto &extension: availableExtensions)
@@ -364,7 +369,12 @@ void Engine::initVulkan()
     queueCreateInfos.push_back(queueCreateInfo);
   }
 
-  const std::vector<const char *> requiredDeviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
+  const std::vector<const char *> requiredDeviceExtensions = {
+    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+    VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME,
+    VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME,
+    VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
+  };
   uint32_t                        deviceExtensionCount;
   vkEnumerateDeviceExtensionProperties(physical_device_h, nullptr, &deviceExtensionCount, nullptr);
   std::vector<VkExtensionProperties> deviceAvailableExtensions(deviceExtensionCount);
@@ -395,7 +405,7 @@ void Engine::initVulkan()
   const char *push_desc                 = "VK_KHR_push_descriptor";
 
   bool descriptorIndexingExtFound = false;
-  for (const auto &ext: availableExtensions)
+  for (const auto &ext: deviceAvailableExtensions)
   {
     if (std::strcmp(descriptorIndexingExtName, ext.extensionName) == 0)
     {
@@ -414,14 +424,6 @@ void Engine::initVulkan()
                  descriptorIndexingExtName);
   }
 
-  VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeatures = {};
-  dynamicRenderingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
-  dynamicRenderingFeatures.dynamicRendering = VK_TRUE;
-
-  VkPhysicalDeviceExtendedDynamicState2FeaturesEXT dynamicPipeline2Features = {};
-  dynamicPipeline2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT;
-  dynamicPipeline2Features.extendedDynamicState2 = VK_TRUE;
-
   VkPhysicalDeviceDescriptorIndexingFeatures indexingFeatures{};
   indexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
   indexingFeatures.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
@@ -435,12 +437,26 @@ void Engine::initVulkan()
   indexingFeatures.descriptorBindingUniformTexelBufferUpdateAfterBind = VK_TRUE;
   indexingFeatures.descriptorBindingStorageTexelBufferUpdateAfterBind = VK_TRUE;
 
+  VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeatures = {};
+  dynamicRenderingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR;
+  dynamicRenderingFeatures.dynamicRendering = VK_TRUE;
+
+  VkPhysicalDeviceExtendedDynamicState2FeaturesEXT dynamicPipeline2Features = {};
+  dynamicPipeline2Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT;
+  dynamicPipeline2Features.extendedDynamicState2 = VK_TRUE;
+
+  VkPhysicalDeviceExtendedDynamicState3FeaturesEXT dynamicPipeline3Features{};
+  dynamicPipeline3Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT;
+  dynamicPipeline3Features.extendedDynamicState3PolygonMode = VK_TRUE;
+
   VkPhysicalDeviceFeatures2 deviceFeatures2{};
-  deviceFeatures2.sType          = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+  deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+  //chaining
   deviceFeatures2.pNext          = &indexingFeatures;
   indexingFeatures.pNext         = &dynamicRenderingFeatures;
   dynamicRenderingFeatures.pNext = &dynamicPipeline2Features;
-  dynamicPipeline2Features.pNext = nullptr;
+  dynamicPipeline2Features.pNext = &dynamicPipeline3Features;
+  dynamicPipeline3Features.pNext = nullptr;
 
   vkGetPhysicalDeviceFeatures2(physical_device_h, &deviceFeatures2);
 
@@ -460,6 +476,6 @@ void Engine::initVulkan()
   vkGetDeviceQueue(device_h, present_family, 0, &present_q);
   spdlog::info("LogicalDevice: Queues obtained.");
 
-  allocator   = std::make_unique<MemoryAllocator>(physical_device_h, device_h);
-  interaction = std::make_unique<EventManager>(window_h);
+  allocator     = std::make_unique<MemoryAllocator>(physical_device_h, device_h);
+  eventManager_ = std::make_unique<EventManager>(window_h);
 }

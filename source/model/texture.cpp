@@ -1,6 +1,6 @@
 #include <texture.hpp>
 
-Texture::Texture(textureCreateInfo info)
+VulkanTexture::VulkanTexture(textureCreateInfo info)
   : device(info.device),
     textureSampler(info.sampler),
     allocator(*info.allocator)
@@ -8,13 +8,13 @@ Texture::Texture(textureCreateInfo info)
   loadImage(info.filename);
 }
 
-Texture::~Texture()
+VulkanTexture::~VulkanTexture()
 {
   vkDestroyImageView(device, textureImageView, nullptr);
   vkDestroyImage(device, textureImage, nullptr);
 }
 
-void Texture::loadImage(const char *filename)
+void VulkanTexture::loadImage(const char *filename)
 {
   int32_t texWidth, texHeight, texChannels;
   stbi_uc *pixels = stbi_load(filename, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -31,7 +31,7 @@ void Texture::loadImage(const char *filename)
 }
 
 //자기 정보를 descriptor hander를 받아서 update
-void Texture::uploadDescriptor(VkDescriptorSet set)
+void VulkanTexture::uploadDescriptor(VkDescriptorSet set)
 {
   if (textureSampler == VK_NULL_HANDLE)
   {
@@ -45,7 +45,7 @@ void Texture::uploadDescriptor(VkDescriptorSet set)
   VkWriteDescriptorSet descriptorWrite{};
   descriptorWrite.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
   descriptorWrite.dstSet          = set;
-  descriptorWrite.dstBinding      = 1; // bindingIndex; // shader에서의 binding 번호
+  descriptorWrite.dstBinding      = 0; // bindingIndex; // shader에서의 binding 번호
   descriptorWrite.dstArrayElement = 0;
   descriptorWrite.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
   descriptorWrite.descriptorCount = 1;
@@ -54,7 +54,7 @@ void Texture::uploadDescriptor(VkDescriptorSet set)
 }
 
 //upload 방법을 통해서 호출
-void Texture::createImage()
+void VulkanTexture::createImage()
 {
   VkImageCreateInfo imageInfo{};
   imageInfo.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -82,7 +82,7 @@ void Texture::createImage()
   vkBindImageMemory(device, textureImage, textureMemory.memory, textureMemory.offset);
 }
 
-void Texture::createImageView()
+void VulkanTexture::createImageView()
 {
   VkImageViewCreateInfo viewInfo{};
   viewInfo.sType                           = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -104,7 +104,7 @@ void Texture::createImageView()
   }
 }
 
-void Texture::copyBufferToImage(VkCommandBuffer command)
+void VulkanTexture::copyBufferToImage(VkCommandBuffer command)
 {
 // 1. stagingBuffer와 deviceLocalImage(VkImage) 생성 (생략)
 // 2. 커맨드 버퍼 기록

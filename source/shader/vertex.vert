@@ -1,12 +1,10 @@
 
 #version 450
-//| Descriptor Set | Binding Slot  | 용도 설명                                            
-//| -------------- | ------------- | ------------------------------------------------ 
-//| `set = 0`      | `binding = 0` | **Camera / Global Uniform** (view, proj, time 등) 
-//| `set = 0`      | `binding = 1` | Lighting 정보 (optional)                           
-//| `set = 1`      | `binding = 0` | Material 정보 (texture, sampler 등)                 
-//| `set = 1`      | `binding = 1` | Material-specific UBO (색, roughness, etc.)       
-//| `set = 2`      | `binding = 0` | Object-specific (model matrix 등)                 
+//| `set = 0`      | `binding = 0` | Camera / Global Uniform
+//| `set = 0`      | `binding = 1` | Lighting
+//| `set = 1`      | `binding = 0` | texture bindless
+//| `set = 1`      | `binding = 1` | material options
+//| `set = 2`      | `binding = 0` | light
 //| `set = 3+`     | -             | Compute 전용이나 special-case 처리 등                   |
 layout(location = 0) in  vec3 inPosition;
 layout(location = 1) in  vec3 inNormal;

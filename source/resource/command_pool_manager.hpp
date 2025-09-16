@@ -3,15 +3,15 @@
 #include "common.hpp"
 
 //commandBuffer에서 command list 전체 관리 및 렌더링 작업 진행
-struct commandManagerCreateInfo{
+struct CommandPoolManagerCreateInfo{
   VkDevice device;
   VkCommandPool commandPool;
   uint32_t frameCount;
 };
 
-class CommandBufferManager{
+class CommandPoolManager{
 public:
-  CommandBufferManager(const commandManagerCreateInfo &info)
+  CommandPoolManager(const CommandPoolManagerCreateInfo &info)
     : device(info.device),
       commandPool(info.commandPool)
   {
@@ -25,9 +25,9 @@ public:
     {
       throw std::runtime_error("failed to allocate command buffers!");
     }
-  }
 
-  ~CommandBufferManager()
+  }
+  ~CommandPoolManager()
   {
     if (commandPool != VK_NULL_HANDLE)
       vkFreeCommandBuffers(device, commandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());

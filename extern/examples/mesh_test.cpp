@@ -57,7 +57,7 @@ int main()
   commandManagerInfo.device_h    = device_h;
   commandManagerInfo.commandPool = commandPool.get();
   commandManagerInfo.frameCount  = swapchain.getImageCount();
-  CommandBufferManager commandBufferManager(commandManagerInfo);
+  CommandPoolManager commandBufferManager(commandManagerInfo);
   spdlog::info("create command buffers");
   RenderPassCreateInfo render_pass_create_info;
   render_pass_create_info.device      = device_h;

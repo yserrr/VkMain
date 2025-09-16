@@ -1,28 +1,35 @@
-#include <texture.hpp>
-#include <mesh.hpp>
-//#include <material.hpp> 
-#include <light.hpp>
-#include <logicalDevice.hpp>
-#include <common.hpp>
-#include <descriptorPoolManager.hpp>
-#include <Importer.hpp>
-#include <material.hpp>
-#include <camera.hpp>
+
 #ifndef ASSETMANAGER_HPP
 #define ASSETMANAGER_HPP
 
-struct assetCreateInfo{
+#include <texture.hpp>
+#include <mesh.hpp>
+//#include <material.hpp>
+#include <light.hpp>
+#include <common.hpp>
+#include <descriptorPoolManager.hpp>
+#include <importer.hpp>
+#include <material.hpp>
+#include <camera.hpp>
+
+struct ResourceManagerCreateInfo{
   VkDevice         device;
   MemoryAllocator *allocator;
 };
+struct BufferContext{
+  VkBuffer buffer = VK_NULL_HANDLE;
+  Allocation allocation {};
 
-class AssetManager{
+};
+
+
+using VkBindlessDescriptor = VkDescriptorSet;
+class ResourceManager{
 public:
-  AssetManager(const assetCreateInfo &info) :
+  ResourceManager(const ResourceManagerCreateInfo &info) :
     device(info.device),
     allocator(*info.allocator) {}
-
-  ~AssetManager() {}
+  ~ResourceManager() {}
 
   Mesh loadMesh();
   void uploadDescriptors(std::array<VkDescriptorSet, 3> sets);
@@ -31,24 +38,20 @@ public:
   void setTexture();
   void setLight();
 
-  Camera *getCamera()
-  {
-    return camera.get();
-  }
+  Camera *getCamera();
 
   std::unique_ptr<Mesh> mesh;
-//mesh.setUp(command);
 
   ImporterEx *importer;
 
 private:
-  VkDevice                     device;
-  MemoryAllocator &            allocator;
-  std::unique_ptr<SamplerPool> sampler;
-  std::shared_ptr<Texture>     texture;
-  std::shared_ptr<Texture>     nomal;
-
+  VkDevice                        device;
+  MemoryAllocator &               allocator;
+  std::unique_ptr<SamplerBuilder> sampler;
+  std::shared_ptr<VulkanTexture>  texture;
+  std::shared_ptr<VulkanTexture>  nomal;
   std::unique_ptr<LightManager>  lightManager;
+
   std::unique_ptr<Camera>        camera;
   std::array<VkDescriptorSet, 3> descriptors;
 };

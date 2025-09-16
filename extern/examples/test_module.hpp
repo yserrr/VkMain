@@ -18,7 +18,7 @@
 #include <renderpass.hpp>
 #include <../resources/descriptor_layout_pool.hpp>
 #include <../resources/descriptor_set.hpp>
-#include <semaphore.hpp>
+#include <semaphore_pool.hpp>
 #include <fence.hpp>
 #include <buffer.hpp>
 #include <streaming_buffer.hpp>

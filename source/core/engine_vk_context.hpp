@@ -23,7 +23,6 @@ struct QueueFamilyIndices{
   std::optional<uint32_t> transferFamily;
   std::optional<uint32_t> computeFamily;
   std::optional<uint32_t> sparseFamily;
-
   bool isComplete() const
   {
     return graphicsFamily.has_value() && presentFamily.has_value();

@@ -1,4 +1,4 @@
-#include <fence.hpp>
+#include <fence_pool.hpp>
 
 FencePool::FencePool(SignalCreateInfo info, bool signaled)
   : device(info.device),

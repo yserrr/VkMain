@@ -1,6 +1,6 @@
 #ifndef FENCE_HPP
 #define FENCE_HPP
-#include <semaphore.hpp>
+#include <semaphore_pool.hpp>
 
 class FencePool{
 public:

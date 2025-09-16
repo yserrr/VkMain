@@ -3,7 +3,7 @@
 //#include<swapchain_manager.hpp>
 // #include<imgui.h>
 EventManager::EventManager(GLFWwindow *window) :
-window_(window)
+  window_(window)
 {
   glfwSetWindowUserPointer(window, this);
   glfwSetKeyCallback(window, keyCallbackWrapper);
@@ -20,18 +20,22 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
 {
   if (action == GLFW_PRESS)
   {
-    if (key == GLFW_KEY_W)
+    if (key == GLFW_KEY_1)
     {
-      mainCam->moveForward();
+      renderer_->polygonMode = VK_POLYGON_MODE_FILL;
     }
-    if (key == GLFW_KEY_S)
+
+    if (key == GLFW_KEY_2)
     {
-      mainCam->moveBackward(); // 예시
+      renderer_->polygonMode = VK_POLYGON_MODE_LINE;
     }
-    //todo: setting speed
+    if (key == GLFW_KEY_3)
+    {
+      renderer_->depthTest = !renderer_->depthTest;
+    }
     if (key == GLFW_KEY_P)
     {
-//      mainCam->addMoveSpeed(1.0f);
+      //      mainCam->addMoveSpeed(1.0f);
     }
     if (key == GLFW_KEY_O)
     {
@@ -43,24 +47,32 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
     }
     if (key == GLFW_KEY_A)
     {
- //      mainCam->moveLeft();
+      //      mainCam->moveLeft();
     }
     if (key == GLFW_KEY_Q)
     {
       //glfw should close setting ->end the program
       glfwSetWindowShouldClose(window_, GLFW_TRUE);
     }
+
+    if (glfwGetKey(window_, GLFW_KEY_F) == GLFW_PRESS)
+    {
+      mainCam->directionReverse();
+    }
     if (key == GLFW_KEY_SPACE)
     {
       muliiViews = !muliiViews;
       if (!muliiViews)
       {
+        renderer_->viewMode = ViewMode::SingleView;
         double mouseX, mouseY;
         glfwGetCursorPos(window_, &mouseX, &mouseY);
         getViewIndex(mouseX, mouseY);
+      }else
+      {
+        renderer_->viewMode = ViewMode::MultiView;
       }
     }
-
 
     if (key == GLFW_KEY_T)
     {
@@ -78,7 +90,7 @@ void EventManager::setSwapchain(SwapchainManager *swapchainP)
 {
   ///currentExtent.height = swapchainP->getExtent().height;
   ///currentExtent.width  = swapchainP->getExtent().width;
-  ///swapchain_           = swapchainP;
+  ///swapchain_= swapchainP;
 }
 
 void EventManager::mouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
@@ -137,7 +149,7 @@ void EventManager::cursorPosCallback(GLFWwindow *window, double xpos, double ypo
   EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
   if (self && self->mainCam)
   {
-    //self->mainCam->rotate(-deltaX * sensitivity, -deltaY * sensitivity);
+    self->mainCam->addQuaterian(-deltaX * sensitivity, -deltaY * sensitivity);
   }
 }
 
@@ -156,7 +168,7 @@ void EventManager::getViewIndex(double w, double h)
   }
   bool right = w >= (currentExtent.width / 2.0f);
   bool top   = h >= (currentExtent.height / 2.0f);
-  int index  = 0;
+  int  index = 0;
   if (!right && !top) index = 0;     // bottom-left
   else if (right && !top) index = 1; // bottom-right
   else if (!right && top) index = 2; // top-left
@@ -166,8 +178,13 @@ void EventManager::getViewIndex(double w, double h)
 
 void EventManager::wheelUpdate()
 {
-  //mainCam->fovUpdate(wheelDelta_);
-  //wheelDelta_ = 0.0f;
+  mainCam->addFov(wheelDelta_);
+  wheelDelta_ = 0.0f;
+}
+
+void EventManager::setRenderer(SceneRenderer *renderer)
+{
+  renderer_ = renderer;
 }
 
 bool EventManager::isResized()
@@ -189,6 +206,7 @@ VkExtent2D EventManager::getExtent()
 {
   return currentExtent;
 }
+
 //callback
 void EventManager::keyCallbackWrapper(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
@@ -210,7 +228,7 @@ void EventManager::mouseButtonCallbackWrapper(GLFWwindow *window, int button, in
 
 void EventManager::cursorPosCallbackWrapper(GLFWwindow *window, double xpos, double ypos)
 {
-  ImGuiIO &io = ImGui::GetIO();
+  ImGuiIO &io   = ImGui::GetIO();
   io.MousePos.x = static_cast<float>(xpos);
   io.MousePos.y = static_cast<float>(ypos);
   if (io.WantCaptureMouse)
@@ -240,15 +258,15 @@ void EventManager::getKey()
 {
   if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS)
   {
-    mainCam->moveForward(); // 매 프레임 이동
+    mainCam->moveForward();
   }
   if (glfwGetKey(window_, GLFW_KEY_A) == GLFW_PRESS)
   {
-    //mainCam->moveLeft(); // 매 프레임 이동
+    mainCam->moveLeft();
   }
   if (glfwGetKey(window_, GLFW_KEY_D) == GLFW_PRESS)
   {
-    //mainCam->moveRight(); // 매 프레임 이동
+    mainCam->moveRight();
   }
   if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS)
   {

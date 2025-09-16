@@ -1,64 +1,51 @@
-#include <vulkan/vulkan.h>
-#include <string>
-#include <memory>
-#include <texture.hpp>
-
-#define MAX_MATERIALS 4
 #ifndef MATERIAL_HPP
 #define MATERIAL_HPP
+#define MATERIAL_MAX 32
+#include <material_cfg.hpp>
+
+class TextureManager;
+enum class MaterialMap:uint32_t;
+struct MatMeta;
+using MAT_ID = std::string;
 
 
-struct MaterialType {
-    glm::vec4 albedo;      // 16 bytes (offset 0)
-    glm::vec4 params;      // metallic, roughness, ao, padding (16 bytes, offset 16)
-    uint32_t flags;         // 4 bytes (offset 32) //flag for material type
-    uint32_t albedoIndex;
-    uint32_t normalIndex;
-    uint32_t metallicTexIndex;
-    uint32_t roughnessTexIndex;
-    uint32_t aoTexIndex;
-    uint32_t emissionTexIndex;
-    uint32_t padding;
-}; 
+/// todo ; current:
+///  material map -> indexing
+///  string -> unordered map control
 
-
-
-class Material {
+class Material{
+  friend class UIControler;
 public:
-Material(const std::string& name)
-: name(name),
-   baseColor{1.0f, 1.0f, 1.0f, 1.0f},
-   metallic(0.0f),
-  roughness(1.0f)
-{}
+  Material() = default;
+  void setDesc(const MaterialDesc &desc);
+  void setBaseColor(const glm::vec4 &color);
+  void setBaseColor(float r, float g, float b, float a = 1.0f);
+  void setMetallic(float v);
+  void setRoughness(float v);
+  void setAo(float v);
+  void setEmission(float s);
+  void setEmissionColor(const glm::vec3 &c);
+  void setNormalScale(float s);
+  void setAlphaCutoff(float v);
+  void setDoubleSided(bool b);
+  void setAlphaBlend(bool b);
 
-// 기본 색상 설정
-void setBaseColor(float r, float g, float b, float a = 1.0f) {
-    baseColor[0] = r;
-    baseColor[1] = g;
-    baseColor[2] = b;
-    baseColor[3] = a;
-}
+  float getMetallic() const;
+  float getRoughness() const;
+  uint32_t getAlbedoTexture() const;
+  uint32_t getNormalTexture() const;
+  uint32_t getMetallicTexture() const;
+  glm::vec3 getBaseColor() const;
 
-// 텍스처 세터
-void setAlbedoTexture(std::shared_ptr<Texture> tex) { albedoTexture = tex; }
-void setNormalTexture(std::shared_ptr<Texture> tex) { normalTexture = tex; }
-void setMetallicRoughnessTexture(std::shared_ptr<Texture> tex) { metallicRoughnessTexture = tex; }
-// 셰이더 등에서 쓸 수 있게 게터 제공
-const float* getBaseColor()                            const { return baseColor; }
-      float  getMetallic()                             const { return metallic;  }
-      float  getRoughness()                            const { return roughness; }
-std::shared_ptr<Texture> getAlbedoTexture()            const { return albedoTexture; }
-std::shared_ptr<Texture> getNormalTexture()            const { return normalTexture; }
-std::shared_ptr<Texture> getMetallicRoughnessTexture() const { return metallicRoughnessTexture; }
+  uint32_t getMaterialIndex(MAT_ID id) const;
 private:
-std::string name;
-float baseColor[4];   // RGBA 기본색상
-float metallic;       // 금속도
-float roughness;      // 거칠기
-std::shared_ptr<Texture> albedoTexture;
-std::shared_ptr<Texture> normalTexture;
-std::shared_ptr<Texture> metallicRoughnessTexture;
+  //infunction
+
+private:
+  std::unordered_map<MAT_ID, uint32_t> settedMat_;
 };
 
-#endif 
+//todo: update material map
+//void setMapUV(MaterialMap map, float tilingU, float tilingV, float offsetU, float offsetV);
+//void setMapStrength(MaterialMap map, float s);
+#endif

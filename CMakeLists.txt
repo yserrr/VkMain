@@ -7,6 +7,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
 
 set(SOURCE_DIR ${CMAKE_SOURCE_DIR}/source)
 set(EXTERN_DIR ${CMAKE_SOURCE_DIR}/extern)
+set(MODEL_DIR  ${CMAKE_SOURCE_DIR}/extern/externModel/assets/models/)
+set(TEXTURE_DIR  ${CMAKE_SOURCE_DIR}/extern/externModel/assets/textures)
+
 set(KTX ${EXTERN_DIR}/ktx/lib)
 include_directories(${CMAKE_SOURCE_DIR}/source/resource)
 include_directories(${CMAKE_SOURCE_DIR}/source/renderer)
@@ -55,7 +58,7 @@ add_executable(exe
         source/core/engine_init.cpp
         source/core/engine_vk_load.cpp
         source/core/renderer_draw.cpp
-        source/core/asset_setup.cpp
+        source/core/resource_manager_init.cpp
         source/core/event_manager.cpp
 
         source/core/ui_renderer_begin.cpp
@@ -65,12 +68,16 @@ add_executable(exe
 
         source/resource/descriptor_pool.cpp
         source/resource/shader_module.cpp
+        source/resource/frame_pool.cpp
+        source/resource/memory_pool.cpp
+        source/resource/memory_allocator.cpp
         source/resource/buffer.cpp
         source/model/texture.cpp
         source/model/camera.cpp
+        source/model/importer.cpp
 
         source/resource/swapchain.cpp
-        source/resource/semaphore.cpp
+        source/resource/semaphore_pool.cpp
 
 
         extern/imgui/imgui_impl_glfw.cpp
@@ -83,9 +90,9 @@ add_executable(exe
 
         source/renderer/renderpass.cpp
         source/resource/command_pool.cpp
-        source/resource/semaphore.cpp
-        source/resource/fence.cpp
-        source/resource/sampler_pool.cpp
+        source/resource/semaphore_pool.cpp
+        source/resource/fence_pool.cpp
+        source/resource/sampler_builder.cpp
 
 )
 find_package(spdlog REQUIRED)
@@ -105,4 +112,9 @@ target_link_libraries(exe
         assimp::assimp
         shaderc
         ktx
+)
+
+target_compile_definitions(exe PRIVATE
+    ASSET_MODELS_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/extern/externModel/assets/models\"
+    ASSET_TEXTURES_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/extern/externModel/assets/textures\"
 )
