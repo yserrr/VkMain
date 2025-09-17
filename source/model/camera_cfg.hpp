@@ -42,17 +42,17 @@ struct ViewExtent{
 
 struct ViewConfig{
   std::string name;
-  ViewExtent  extent      = {1280, 720};
-  float       fovDeg      = 45.0f;
-  float       aspect      = 16.0f / 9.0f;
-  float       nearPlane   = 0.1f;
-  float       farPlane    = 300.0f;
-  CameraMode  mode        = CameraMode::PERSPECTIVE;
-  float       orthoHeight = 10.0f;
+  ViewExtent extent = {1280, 720};
+  float fovDeg      = 45.0f;
+  float aspect      = 16.0f / 9.0f;
+  float nearPlane   = 0.1f;
+  float farPlane    = 300.0f;
+  CameraMode mode   = CameraMode::PERSPECTIVE;
+  float orthoHeight = 10.0f;
   ClipControl clip{};
-  glm::vec2   jitter  = glm::vec2(0.0f);
-  Eye         eye     = Eye::MONO;
-  float       ipdHalf = 0.032f;
+  glm::vec2 jitter = glm::vec2(0.0f);
+  Eye eye          = Eye::MONO;
+  float ipdHalf    = 0.032f;
 };
 
 namespace gpu{
@@ -78,10 +78,10 @@ namespace gpu{
 }
 
 struct ViewData{
-  ViewConfig          cfg;
+  ViewConfig cfg;
   gpu::cam_processing camBuf{};
   gpu::cam_processing prevBuf{};
-  bool                dirty = false;
+  bool dirty = false;
 };
 
 static_assert(sizeof(gpu::cam_processing) % 16 == 0, "CameraUBO must be 16-byte aligned");

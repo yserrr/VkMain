@@ -44,12 +44,10 @@ struct FrameBucket{
   VkCommandBuffer lastBegun = VK_NULL_HANDLE;
 };
 
-
 struct SecondaryBucket{
   VkCommandPool pool = VK_NULL_HANDLE;
   std::vector<VkCommandBuffer> cache;
   std::unique_ptr<std::mutex> mtx;
 };
-
 
 #endif

@@ -34,7 +34,7 @@ enum class MinAlignType:uint32_t{
   UNIFORM,
   STORAGE,
   TEXEL,
-  IMAGE, // IMAGE -> ALIGNMENT COMPUTED ON ALLOCATION
+  IMAGE,
 };
 
 class streamingBuffer{
@@ -68,7 +68,7 @@ public:
   void recordCopyToImage(
       VkCommandBuffer command,
       const StreamingBlock &src,
-      const VkBufferImageCopy* region,
+      const VkBufferImageCopy *region,
       uint32_t regionCount,
       VkImage dstImage,
       VkImageLayout imageLayout
@@ -125,13 +125,13 @@ private:
   VkDevice device_;
   MemoryAllocator &allocator_;
   VkBuffer streaming_     = VK_NULL_HANDLE;
-  Allocation *allocation_ = nullptr; //dynamic care: new delete
+  Allocation *allocation_ = nullptr;
   VkDeviceSize capacity_  = 0;
 
 private:
-  std::vector<streamingRegion> regions; // inflight space
-  VkDeviceSize head_ = 0;               // write cursor
-  VkDeviceSize tail_ = 0;               // free cursor(완료된 영역까지 전진)
-  void *mapped_      = nullptr;         // persistent map base
-  bool coherent_flag;                   //not cohernt -> flush
+  std::vector<streamingRegion> regions;
+  VkDeviceSize head_ = 0;
+  VkDeviceSize tail_ = 0;
+  void *mapped_      = nullptr;
+  bool coherent_flag;
 };

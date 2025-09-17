@@ -1,9 +1,9 @@
 
-#include "renderpass.hpp"
+#include "renderpass_pool.hpp"
 
 RenderPassPool::RenderPassPool(RenderPassPoolCreateInfo &info) : device(info.device),
-                                                             sysForwardPass_(VK_NULL_HANDLE),
-                                                             colorFormat(info.colorFormat) {};
+                                                                 sysForwardPass_(VK_NULL_HANDLE),
+                                                                 colorFormat(info.colorFormat) {};
 
 RenderPassPool::~RenderPassPool()
 {

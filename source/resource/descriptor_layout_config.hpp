@@ -1,6 +1,7 @@
 #ifndef MYPROJECT_DESCRIPTOR_CONFIG_HPP
 #define MYPROJECT_DESCRIPTOR_CONFIG_HPP
 #include <cstdint>
+
 namespace gpu{
   //setting only default
   enum class descriptor_usage: uint32_t{
@@ -19,6 +20,20 @@ namespace gpu{
     BASE                   = 0x00002000,
   }; //can append raytracing shader structure
 
+  constexpr uint32_t VERTEX_BINDING   = 0;
+  constexpr uint32_t INDEX_BINDING    = 0;
+  constexpr uint32_t INSTANCE_BINDING = 1;
+
+  constexpr uint32_t UBO_LAYOUT           = 1;
+  constexpr uint32_t CAMERA_BINDING       = 0;
+  constexpr uint32_t LOCAL_LIGHT_BINDING  = 1;
+  constexpr uint32_t GLOBAL_LIGHT_BINDING = 2;
+
+  constexpr uint32_t TEXTURE_LAYOUT    = 1;
+  constexpr uint32_t BINDLESS_BINDING  = 0;
+  constexpr uint32_t ALBEDO_BINDING    = 1;
+  constexpr uint32_t NORMAL_BINDING    = 2;
+  constexpr uint32_t ROUGHNESS_BINDING = 3;
   inline uint32_t operator&(uint32_t a, gpu::descriptor_usage b)
   {
     return a & static_cast<unsigned int>(b);
@@ -33,7 +48,8 @@ namespace gpu{
   {
     return a | static_cast<unsigned int>(b);
   }
-};
 
+
+};
 
 #endif //MYPROJECT_DESCRIPTOR_CONFIG_HPP

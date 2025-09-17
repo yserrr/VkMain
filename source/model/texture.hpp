@@ -3,14 +3,14 @@
 #include <common.hpp>
 #include <../resource/sampler_builder.hpp>
 #include <stb_image.h>
-#include <buffer.hpp>
+#include <static_buffer.hpp>
 #include <ktx/include/ktx.h>
 #include <ktx/include/ktxvulkan.h>
 
 struct textureCreateInfo{
-  VkDevice         device;
-  VkSampler        sampler;
-  const char *     filename;
+  VkDevice device;
+  VkSampler sampler;
+  const char *filename;
   MemoryAllocator *allocator;
 };
 
@@ -56,13 +56,12 @@ struct textureCreateInfo{
 
 //};
 
-class VulkanTexture{
-public:
+struct VulkanTexture{
   VulkanTexture(textureCreateInfo info);
   ~VulkanTexture();
 
   void loadImage(const char *filename);
-  void uploadDescriptor(VkDescriptorSet set);
+  void uploadDescriptor(VkDescriptorSet set, uint32_t arrayIndex);
   void copyBufferToImage(VkCommandBuffer command);
 
   VkImageView getImageView() const
@@ -75,17 +74,16 @@ public:
     return textureSampler;
   }
 
-private:
-  VkDevice                device;
-  MemoryAllocator &       allocator;
-  VkImage                 textureImage;
-  VkImageView             textureImageView;
-  Allocation              textureMemory;
-  VkSampler               textureSampler;
-  std::unique_ptr<Buffer> buffer;
-  uint32_t                width;
-  uint32_t                height;
-  void                    createImage();
-  void                    createImageView();
+  VkDevice device;
+  MemoryAllocator &allocator;
+  VkImage textureImage;
+  VkImageView textureImageView;
+  Allocation textureMemory;
+  VkSampler textureSampler;
+  std::unique_ptr<StaticBuffer> buffer;
+  uint32_t width;
+  uint32_t height;
+  void createImage();
+  void createImageView();
 };
 #endif //

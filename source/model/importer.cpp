@@ -17,7 +17,7 @@ namespace fs = std::filesystem;
 
 ImportResult ImporterEx::loadScene(const char *filepath)
 {
-  ImportResult     out;
+  ImportResult out;
   Assimp::Importer importer;
   // aiProcess_ValidateDataStructure // 디버그용
   const aiScene *scene = importer.ReadFile(
@@ -35,7 +35,6 @@ ImportResult ImporterEx::loadScene(const char *filepath)
   if (!scene || !scene->HasMeshes())
   {
     spdlog::error("Failed toe load scene: {}", importer.GetErrorString());
-    throw std::runtime_error("Assimp load failed");
   }
   const string folder = std::filesystem::path(filepath).parent_path().string();
   if (scene->HasTextures())
@@ -44,7 +43,7 @@ ImportResult ImporterEx::loadScene(const char *filepath)
     //embedded texture
     for (unsigned i = 0; i < scene->mNumTextures; ++i)
     {
-      const aiTexture *         t = scene->mTextures[i];
+      const aiTexture *t = scene->mTextures[i];
       ImportResult::EmbeddedTex e{};
       e.name = t->mFilename.C_Str();
       if (t->mHeight == 0)
@@ -90,7 +89,7 @@ void ImporterEx::processMaterialsAndTextures(const aiScene *scene, const string 
     if (AI_SUCCESS != mtl->GetTexture(type, 0, &path)) return -1;
     std::string str = path.C_Str();
 
-    size_t      pos       = str.find_last_of("/\\");
+    size_t pos            = str.find_last_of("/\\");
     std::string filename  = (pos == std::string::npos) ? str : str.substr(pos + 1);
     std::string txtfolder = "/texture/";
     filename              = txtfolder + filename;
@@ -98,7 +97,7 @@ void ImporterEx::processMaterialsAndTextures(const aiScene *scene, const string 
     if (str[0] == '*')
     {
       //embedded
-      std::string  emb   = "embedded:";
+      std::string emb    = "embedded:";
       unsigned int index = std::stoi(path.C_Str());
       str                = emb + str;
       return addTexture(out, slot, str, index);
@@ -108,7 +107,7 @@ void ImporterEx::processMaterialsAndTextures(const aiScene *scene, const string 
 
   for (unsigned i = 0; i < scene->mNumMaterials; ++i)
   {
-    aiMaterial * mtl = scene->mMaterials[i];
+    aiMaterial *mtl = scene->mMaterials[i];
     MaterialDesc md{};
     // BaseColor (PBR) 또는 Diffuse
     aiColor4D base{};
@@ -176,7 +175,7 @@ void ImporterEx::processMeshes(const aiScene *scene, ImportResult &out)
   out.meshes.reserve(scene->mNumMeshes);
   for (unsigned m = 0; m < scene->mNumMeshes; ++m)
   {
-    aiMesh * am = scene->mMeshes[m];
+    aiMesh *am = scene->mMeshes[m];
     MeshDesc md{};
     md.name          = am->mName.C_Str();
     md.materialIndex = static_cast<int>(am->mMaterialIndex);
@@ -266,7 +265,7 @@ void ImporterEx::processMeshesWithOnlyTriangles(const aiScene *scene, ImportResu
     ///  need to set up with dynamic topology
     ///  need: topology
     ///  -> need type binding pipeline and draw call
-    aiMesh * am = scene->mMeshes[m];
+    aiMesh *am = scene->mMeshes[m];
     MeshDesc md{};
     md.name = am->mName.C_Str();
 
@@ -274,7 +273,7 @@ void ImporterEx::processMeshesWithOnlyTriangles(const aiScene *scene, ImportResu
     md.primitives    = am->mPrimitiveTypes;
 
     std::vector<VertexAll> vertices;
-    std::vector<uint32_t>  indices;
+    std::vector<uint32_t> indices;
     for (unsigned f = 0; f < am->mNumFaces; ++f)
     {
       const aiFace &face = am->mFaces[f];
@@ -288,7 +287,7 @@ void ImporterEx::processMeshesWithOnlyTriangles(const aiScene *scene, ImportResu
       for (unsigned idx = 0; idx < 3; ++idx)
       {
         const auto &srcV = am->mVertices[face.mIndices[idx]];
-        VertexAll   v{};
+        VertexAll v{};
         v.position[0] = srcV.x;
         v.position[1] = srcV.y;
         v.position[2] = srcV.z;
@@ -357,10 +356,10 @@ void ImporterEx::processBones(aiMesh *mesh, std::vector<VertexAll> &vertices)
 {
   struct BW{
     uint32_t i;
-    float    w;
+    float w;
   };
   std::vector<std::array<BW, 4> > accum(vertices.size());
-  std::vector<int>                counts(vertices.size(), 0);
+  std::vector<int> counts(vertices.size(), 0);
 
   auto push = [&](uint32_t vtx, uint32_t boneId, float w)
   {
@@ -417,11 +416,11 @@ void ImporterEx::buildNodeHierarchy(const aiScene *scene, ImportResult &out)
 }
 
 int ImporterEx::buildNodeRecursive(
-    const aiScene *  scene,
-    const aiNode *   node,
-    int              parent,
+    const aiScene *scene,
+    const aiNode *node,
+    int parent,
     const glm::mat4 &parentWorld,
-    ImportResult &   out
+    ImportResult &out
   )
 {
   NodeDesc nd{};
@@ -457,7 +456,7 @@ void ImporterEx::processAnimations(const aiScene *scene, ImportResult &out)
   for (unsigned a = 0; a < scene->mNumAnimations; ++a)
   {
     const aiAnimation *anim = scene->mAnimations[a];
-    AnimationClip      clip{};
+    AnimationClip clip{};
     clip.name           = anim->mName.C_Str();
     clip.duration       = anim->mDuration;
     clip.ticksPerSecond = anim->mTicksPerSecond > 0.0 ? anim->mTicksPerSecond : 25.0;
@@ -465,7 +464,7 @@ void ImporterEx::processAnimations(const aiScene *scene, ImportResult &out)
     for (unsigned c = 0; c < anim->mNumChannels; ++c)
     {
       const aiNodeAnim *ch = anim->mChannels[c];
-      NodeAnim          na{};
+      NodeAnim na{};
       na.nodeName = ch->mNodeName.C_Str();
 
       na.positions.reserve(ch->mNumPositionKeys);
@@ -492,7 +491,7 @@ void ImporterEx::processLights(const aiScene *scene, ImportResult &out)
   for (unsigned i = 0; i < scene->mNumLights; ++i)
   {
     const aiLight *l = scene->mLights[i];
-    LightDesc      d{};
+    LightDesc d{};
     d.name      = l->mName.C_Str();
     d.type      = static_cast<int>(l->mType);
     d.color     = glm::vec3(l->mColorDiffuse.r, l->mColorDiffuse.g, l->mColorDiffuse.b);
@@ -508,11 +507,11 @@ void ImporterEx::processLights(const aiScene *scene, ImportResult &out)
 Mesh ImporterEx::loadModel(const char *filepath, MemoryAllocator &allocator)
 {
   Assimp::Importer importer;
-  const aiScene *  scene = importer.ReadFile(filepath,
-                                             aiProcess_Triangulate |
-                                             aiProcess_FlipUVs |
-                                             aiProcess_CalcTangentSpace |
-                                             aiProcess_GenNormals);
+  const aiScene *scene = importer.ReadFile(filepath,
+                                           aiProcess_Triangulate |
+                                           aiProcess_FlipUVs |
+                                           aiProcess_CalcTangentSpace |
+                                           aiProcess_GenNormals);
 
   if (!scene || !scene->HasMeshes())
   {
@@ -521,7 +520,7 @@ Mesh ImporterEx::loadModel(const char *filepath, MemoryAllocator &allocator)
   }
 
   std::vector<VertexAll> vertices;
-  std::vector<uint32_t>  indices;
+  std::vector<uint32_t> indices;
 
   for (unsigned int m = 0; m < scene->mNumMeshes; ++m)
   {
@@ -615,7 +614,7 @@ void ImporterEx::processCameras(const aiScene *scene, ImportResult &out)
   for (unsigned i = 0; i < scene->mNumCameras; ++i)
   {
     const aiCamera *c = scene->mCameras[i];
-    CameraDesc      d{};
+    CameraDesc d{};
     d.name   = c->mName.C_Str();
     d.fovY   = c->mHorizontalFOV; // 주의: 수평/수직 FOV 해석은 타겟 엔진 규칙에 맞춰 보정
     d.nearZ  = c->mClipPlaneNear;

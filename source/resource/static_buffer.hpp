@@ -1,22 +1,20 @@
 #ifndef BUFFER_HPP
 #define BUFFER_HPP
 #include <common.hpp>
-
 enum class BufferType{
-  Vertex,
-  Index,
-  Uniform,
-  Storage,
-  Stage
+  VERTEX,
+  INDEX,
+  UNIFORM,
+  STORAGE,
+  STAGE
 };
-
-class Buffer{
+class StaticBuffer{
 public:
-  Buffer(MemoryAllocator &allocator,
-         VkDeviceSize     bufferSize,
-         BufferType       type);
+  StaticBuffer(MemoryAllocator &allocator,
+               VkDeviceSize bufferSize,
+               BufferType type);
 
-  ~Buffer();
+  ~StaticBuffer();
   void copyBuffer(VkCommandBuffer commandBuffer);
   void createMainBuffer();
   void createUniformBuffer();
@@ -26,15 +24,15 @@ public:
   const VkBuffer getStagingBuffer();
 
 private:
-  VkDevice         device;
+  VkDevice device;
   VkPhysicalDevice physicalDevice;
   MemoryAllocator &allocator;
-  VkBuffer         stagingBuffer;
-  VkBuffer         buffer;
-  Allocation       stagingAllocation;
-  Allocation       allocation;
-  VkDeviceSize     bufferSize;
-  BufferType       type;
+  VkBuffer stagingBuffer;
+  VkBuffer buffer;
+  Allocation stagingAllocation;
+  Allocation allocation;
+  VkDeviceSize bufferSize;
+  BufferType type;
 
   bool stage(BufferType type);
 

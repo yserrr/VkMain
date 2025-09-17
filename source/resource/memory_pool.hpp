@@ -13,29 +13,31 @@ enum class AllocationType{
 };
 
 struct Allocation{
-  VkDeviceMemory memory          = VK_NULL_HANDLE;
-  VkDeviceSize   offset          = 0;
-  VkDeviceSize   size            = 0;
-  uint32_t       memoryTypeIndex = 0;
-  AllocationType type            = AllocationType::GENERIC;
-  void *         maped           = nullptr;
-  std::string    debugName       = "not allocated";
+  VkDeviceMemory memory    = VK_NULL_HANDLE;
+  VkDeviceSize offset      = 0;
+  VkDeviceSize size        = 0;
+  uint32_t memoryTypeIndex = 0;
+  void *maped;
+  AllocationType type   = AllocationType::GENERIC;
+  std::string debugName = "not allocated";
 };
 
 class MemoryPool{
+  friend class MemoryAllocator;
+
 public:
-  MemoryPool(VkDevice     device,
-             uint32_t     memoryTypeIndex,
+  MemoryPool(VkDevice device,
+             uint32_t memoryTypeIndex,
              VkDeviceSize size);
   ~MemoryPool();
   bool allocate(VkDeviceSize size,
                 VkDeviceSize alignment,
-                Allocation & out);
+                Allocation &out);
 
-  void           free(VkDeviceSize offset, VkDeviceSize size);
-  uint32_t       getMemoryTypeIndex() const;
+  void free(VkDeviceSize offset, VkDeviceSize size);
+  uint32_t getMemoryTypeIndex() const;
   VkDeviceMemory getMemory() const;
-  void *         map();
+  void *map();
 
 private:
   struct FreeBlock{
@@ -43,12 +45,12 @@ private:
     VkDeviceSize size;
   };
 
-  bool                   mapped = false;
-  void *                 persistent_;
-  VkDevice               device;
-  VkDeviceMemory         memory;
-  uint32_t               memoryTypeIndex;
-  VkDeviceSize           totalSize;
+  bool mapped = false;
+  void *persistent_;
+  VkDevice device;
+  VkDeviceMemory memory;
+  uint32_t memoryTypeIndex;
+  VkDeviceSize totalSize;
   std::vector<FreeBlock> freeBlocks;
 
   void mergeFreeBlocks();

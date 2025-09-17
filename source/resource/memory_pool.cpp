@@ -4,7 +4,7 @@
 
 #include "memory_pool.hpp"
 #include "spdlog/spdlog.h"
-
+#include "common.hpp"
 MemoryPool::MemoryPool(VkDevice     device,
                        uint32_t     memoryTypeIndex,
                        VkDeviceSize size)
@@ -106,8 +106,9 @@ void MemoryPool::mergeFreeBlocks()
 void *MemoryPool::map()
 {
   assert(!mapped);
-  vkMapMemory(device, memory, 0,VK_WHOLE_SIZE, 0, &persistent_);
+  void* data;
+  VK_ASSERT(vkMapMemory(device, memory, 0,VK_WHOLE_SIZE, 0, &data));
   mapped = true;
-
+  persistent_ = data;
   return persistent_;
 }

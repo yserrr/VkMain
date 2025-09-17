@@ -13,20 +13,20 @@ class ImporterEx{
 public:
   ImporterEx() = default;
   ImportResult loadScene(const char *filepath);
-  Mesh         loadModel(const char *filepath, MemoryAllocator &allocator);
+  Mesh loadModel(const char *filepath, MemoryAllocator &allocator);
 
 private:
   void processMaterialsAndTextures(const aiScene *scene, const std::string &folder, ImportResult &out);
   void processMeshes(const aiScene *scene, ImportResult &out);
   void processMeshesWithOnlyTriangles(const aiScene *scene, ImportResult &out);
   void processBones(aiMesh *mesh, std::vector<VertexAll> &vertices);
-  int  addTexture(ImportResult &out, TexUsage slot, const std::string &path, int embeddedIndex);
-  int  buildNodeRecursive(
-      const aiScene *  scene,
-      const aiNode *   node,
-      int              parent,
+  int addTexture(ImportResult &out, TexUsage slot, const std::string &path, int embeddedIndex);
+  int buildNodeRecursive(
+      const aiScene *scene,
+      const aiNode *node,
+      int parent,
       const glm::mat4 &parentWorld,
-      ImportResult &   out
+      ImportResult &out
     );
   void buildNodeHierarchy(const aiScene *scene, ImportResult &out);
   void processAnimations(const aiScene *scene, ImportResult &out);

@@ -1,23 +1,27 @@
 #include<event_manager.hpp>
 #include <imgui.h>
-//#include<swapchain_manager.hpp>
-// #include<imgui.h>
+
 EventManager::EventManager(GLFWwindow *window) :
   window_(window)
 {
   glfwSetWindowUserPointer(window, this);
   glfwSetKeyCallback(window, keyCallbackWrapper);
-  glfwSetCursorPosCallback(window, cursorPosCallbackWrapper); // 반드시 필요 // 어딘가에서 반드시 등록되어야 함
+  glfwSetCursorPosCallback(window, cursorPosCallbackWrapper);
   glfwSetMouseButtonCallback(window, mouseButtonCallbackWrapper);
   glfwMakeContextCurrent(window);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
   glfwSetScrollCallback(window, scrollCallback);
-  lastActionTime = glfwGetTime(); // 200ms
+  lastActionTime = glfwGetTime();
   spdlog::info("interaction set up");
 }
 
 void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
 {
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.WantCaptureMouse)
+  {
+    return;
+  }
   if (action == GLFW_PRESS)
   {
     if (key == GLFW_KEY_1)
@@ -35,23 +39,22 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
     }
     if (key == GLFW_KEY_P)
     {
-      //      mainCam->addMoveSpeed(1.0f);
+      //mainCam->addMoveSpeed(1.0f);
     }
     if (key == GLFW_KEY_O)
     {
-//      mainCam->addMoveSpeed(-1.0f);
+      //mainCam->(-1.0f);
     }
     if (key == GLFW_KEY_D)
     {
-//       mainCam->moveRight();
+      mainCam->moveRight();
     }
     if (key == GLFW_KEY_A)
     {
-      //      mainCam->moveLeft();
+      mainCam->moveLeft();
     }
     if (key == GLFW_KEY_Q)
     {
-      //glfw should close setting ->end the program
       glfwSetWindowShouldClose(window_, GLFW_TRUE);
     }
 
@@ -68,7 +71,7 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
         double mouseX, mouseY;
         glfwGetCursorPos(window_, &mouseX, &mouseY);
         getViewIndex(mouseX, mouseY);
-      }else
+      } else
       {
         renderer_->viewMode = ViewMode::MultiView;
       }
@@ -77,6 +80,11 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
     if (key == GLFW_KEY_T)
     {
       mouseMoveState = !mouseMoveState;
+      if (mouseMoveState)
+      {
+        io.MousePos.x = lastX;
+        io.MousePos.y = lastY;
+      }
     }
   }
 }
@@ -136,31 +144,38 @@ void EventManager::mouseButtonCallback(GLFWwindow *window, int button, int actio
 
 void EventManager::cursorPosCallback(GLFWwindow *window, double xpos, double ypos)
 {
-  if (!mouseMoveState) return;
-  ImGuiIO &io = ImGui::GetIO();
-  if (io.WantCaptureMouse)
-  {
-    return;
-  }
   float deltaX       = static_cast<float>(xpos - lastX);
   float deltaY       = static_cast<float>(ypos - lastY);
   lastX              = xpos;
   lastY              = ypos;
+  if (!mouseMoveState) return;
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.WantCaptureMouse | moved)
+  {
+    return;
+  }
   EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
   if (self && self->mainCam)
   {
     self->mainCam->addQuaterian(-deltaX * sensitivity, -deltaY * sensitivity);
+    moved = true;
   }
 }
 
 void EventManager::scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.WantCaptureMouse)
+  {
+    return;
+  }
   EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
   self->wheelDelta_ += yoffset;
 }
 
 void EventManager::getViewIndex(double w, double h)
 {
+
   ImGuiIO &io = ImGui::GetIO();
   if (io.WantCaptureMouse)
   {
@@ -169,10 +184,10 @@ void EventManager::getViewIndex(double w, double h)
   bool right = w >= (currentExtent.width / 2.0f);
   bool top   = h >= (currentExtent.height / 2.0f);
   int  index = 0;
-  if (!right && !top) index = 0;     // bottom-left
-  else if (right && !top) index = 1; // bottom-right
-  else if (!right && top) index = 2; // top-left
-  else if (right && top) index = 3;  // top-right
+  if (!right && !top) index = 0;
+  else if (right && !top) index = 1;
+  else if (!right && top) index = 2;
+  else if (right && top) index = 3;
   //mainCam->setMainCam(index);
 }
 
@@ -207,7 +222,6 @@ VkExtent2D EventManager::getExtent()
   return currentExtent;
 }
 
-//callback
 void EventManager::keyCallbackWrapper(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
   EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
@@ -219,6 +233,12 @@ void EventManager::keyCallbackWrapper(GLFWwindow *window, int key, int scancode,
 
 void EventManager::mouseButtonCallbackWrapper(GLFWwindow *window, int button, int action, int mods)
 {
+  ImGuiIO &io   = ImGui::GetIO();
+  if (io.WantCaptureMouse)
+  {
+    return;
+  }
+
   EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
   if (self)
   {
@@ -245,6 +265,7 @@ void EventManager::cursorPosCallbackWrapper(GLFWwindow *window, double xpos, dou
 
 void EventManager::framebufferSizeCallback(GLFWwindow *window, int w, int h)
 {
+
   EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
   if (self)
   {
@@ -256,6 +277,11 @@ void EventManager::framebufferSizeCallback(GLFWwindow *window, int w, int h)
 
 void EventManager::getKey()
 {
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.WantCaptureMouse)
+  {
+    return;
+  }
   if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS)
   {
     mainCam->moveForward();
@@ -270,6 +296,6 @@ void EventManager::getKey()
   }
   if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS)
   {
-    mainCam->moveBackward(); // 매 프레임 이동
+    mainCam->moveBackward();
   }
 }

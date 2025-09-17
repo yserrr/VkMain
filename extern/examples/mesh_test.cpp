@@ -25,9 +25,6 @@ int main()
   VulkanDevice device(info);
   const VkContext& context = device.getContext();
 
-  VkPhysicalDeviceProperties physicalDeviceProperties;
-  vkGetPhysicalDeviceProperties(context.physical_device_h, &physicalDeviceProperties);
-  auto minUboAlign = physicalDeviceProperties.limits.minUniformBufferOffsetAlignment;
   MemoryAllocator allocator(context.physical_device_h, context.device_h);
   SwapchainCreateInfo swapchainInfo(allocator);
   swapchainInfo.device_h         = context.device_h;

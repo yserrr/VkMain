@@ -10,7 +10,9 @@
 #include<unordered_map>
 #include<vector>
 #include<string>
-#include <descriptor_set_config.hpp>
+#include <descriptor_layout_config.hpp>
+
+
 constexpr uint32_t BINDELSS_TEXTURE_ARRAY_CNT = 1024;
 constexpr uint32_t DYNAMIC_UBO_ARRAY_CNT      = 8;
 
@@ -50,11 +52,13 @@ public:
                        VkShaderStageFlags stage,
                        std::vector<VkDescriptorBindingFlags> &bindingFlags,
                        uint32_t arrayCnt = 1);
+
   void buildTextureLayout(std::vector<VkDescriptorSetLayoutBinding> &bindings,
-    uint32_t bindingIndex,
-    VkShaderStageFlags stage,
-    std::vector<VkDescriptorBindingFlags> &bindingFlags,
-    uint32_t arrayCnt);
+                          uint32_t bindingIndex,
+                          VkShaderStageFlags stage,
+                          std::vector<VkDescriptorBindingFlags> &bindingFlags,
+                          uint32_t arrayCnt);
+
 private:
   VkDevice device_;
 };

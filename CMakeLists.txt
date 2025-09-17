@@ -57,24 +57,34 @@ add_executable(exe
         source/core/engine.cpp
         source/core/engine_init.cpp
         source/core/engine_vk_load.cpp
-        source/core/renderer_draw.cpp
+
+        source/core/resource_manager.cpp
         source/core/resource_manager_init.cpp
         source/core/event_manager.cpp
+
+        source/core/renderer.cpp
+        source/core/renderer_draw.cpp
+
 
         source/core/ui_renderer_begin.cpp
         source/core/ui_renderer_draw.cpp
         source/core/ui_renderer_draw_state.cpp
 
-
+        source/resource/descriptor_manager.cpp
         source/resource/descriptor_pool.cpp
         source/resource/shader_module.cpp
         source/resource/frame_pool.cpp
         source/resource/memory_pool.cpp
         source/resource/memory_allocator.cpp
-        source/resource/buffer.cpp
+        source/resource/static_buffer.cpp
+        source/resource/descriptor_uploader.cpp
+        source/resource/buffer_builder.cpp
+        source/resource/swapchain_view.cpp
+
         source/model/texture.cpp
         source/model/camera.cpp
         source/model/importer.cpp
+        source/model/mesh.cpp
 
         source/resource/swapchain.cpp
         source/resource/semaphore_pool.cpp
@@ -88,7 +98,7 @@ add_executable(exe
         extern/imgui/imgui_widgets.cpp
         extern/imgui/back/imgui_impl_vulkan.cpp
 
-        source/renderer/renderpass.cpp
+        source/resource/renderpass_pool.cpp
         source/resource/command_pool.cpp
         source/resource/semaphore_pool.cpp
         source/resource/fence_pool.cpp
@@ -115,6 +125,6 @@ target_link_libraries(exe
 )
 
 target_compile_definitions(exe PRIVATE
-    ASSET_MODELS_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/extern/externModel/assets/models\"
-    ASSET_TEXTURES_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/extern/externModel/assets/textures\"
+    ASSET_MODELS_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/extern/externModel/assets/models/\"
+    ASSET_TEXTURES_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}/extern/externModel/assets/textures/\"
 )

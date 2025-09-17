@@ -3,13 +3,9 @@
 //
 #include <base_geometry.hpp>
 
-MeshDesc GeometryFactory::generateCubes(glm::vec3 center, glm::vec3 size)
-{
+MeshDesc GeometryFactory::generateCubes(glm::vec3 center, glm::vec3 size) {}
 
-}
-
-MeshDesc GeometryFactory::GenerateGrid
-  (
+MeshDesc GeometryFactory::GenerateGrid(
     glm::vec3 center,
     int xCount,
     int yCount,
@@ -20,9 +16,9 @@ MeshDesc GeometryFactory::GenerateGrid
   MeshDesc descs;
   descs.vertices.reserve((xCount + 1) * (yCount + 1));
   //descs.primitives = PrimitiveType::LINE;
-  float startX     = center.x - (xGridSize * xCount) / 2.0f;
-  float startY     = center.y - (yGridSize * yCount) / 2.0f;
-  float z          = center.z;
+  float startX = center.x - (xGridSize * xCount) / 2.0f;
+  float startY = center.y - (yGridSize * yCount) / 2.0f;
+  float z      = center.z;
   for (int i = 0; i <= xCount; ++i)
   {
     for (int j = 0; j <= yCount; ++j)
@@ -37,9 +33,7 @@ MeshDesc GeometryFactory::GenerateGrid
   return descs;
 }
 
-
-MeshDesc GeometryFactory::generateSpheres
-  (
+MeshDesc GeometryFactory::generateSpheres(
     glm::vec3 center,
     float radius,
     int stacks,
@@ -73,7 +67,7 @@ MeshDesc GeometryFactory::generateSpheres
     }
   }
 
-  for(int i = 0; i < stacks; ++i)
+  for (int i = 0; i < stacks; ++i)
   {
     for (int j = 0; j < slices; ++j)
     {
@@ -87,10 +81,10 @@ MeshDesc GeometryFactory::generateSpheres
       desc.indices.push_back(first + 1);
     }
   }
-  desc.name = "spheres";
+  desc.name        = "spheres";
   desc.numVertices = desc.vertices.size();
-  desc.numIndices = desc.indices.size();
-  desc.uvChanels  = 1;
+  desc.numIndices  = desc.indices.size();
+  desc.uvChanels   = 1;
   //desc.primitives = PrimitiveType::TRIANGLE;
   return desc;
 };

@@ -1,7 +1,7 @@
 #version 450
 
 //| Descriptor Set | Binding Slot  |
-//| -------------- | ------------- | ------------------------------------------------ 
+//| -------------- | ------------- | ------------------------------------------------
 //| `set = 0`      | `binding = 0` | Camera / Global Uniform
 //| `set = 0`      | `binding = 1` | Lighting_dynamic
 //| `set = 1`      | `binding = 0` | Material texture-bindless
@@ -19,9 +19,10 @@ layout (location = 0) in vec2 fragTexCoord;
 layout (location = 0) out vec4 outColor;
 
 layout (set = 1, binding = 0) uniform sampler2D bindlessTexture[];
-layout (set = 1, binding = 1) uniform sampler2D myTexture;
-
-layout (std140, set = 2, binding = 0) uniform LightBuffer {
+layout (set = 1, binding = 1) uniform sampler2D albedo;
+layout (set = 1, binding = 2) uniform sampler2D normal;
+layout (set = 1,  binding = 3) uniform sampler2D roughness;
+layout (std140, set = 0, binding = 1) uniform LightBuffer {
   GPULight lights[16];
   int lightCount;
 };

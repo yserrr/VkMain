@@ -25,7 +25,7 @@ void CameraDescriptorPool::createPool(uint32_t count)
   poolInfo.poolSizeCount = 1;
   poolInfo.pPoolSizes    = &poolSize;
   poolInfo.maxSets       = count; // 총 몇 개의 descriptor set을 만들건지
-  poolInfo.flags         = 0;     // VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT 등 가능
+  poolInfo.flags         = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;     // VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT 등 가능
   if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
   {
     throw std::runtime_error("failed to create descriptor pool!");
@@ -42,7 +42,7 @@ void TextureDescriptorPool::createPool(uint32_t count)
   poolInfo.poolSizeCount = 1;
   poolInfo.pPoolSizes    = &poolSize;
   poolInfo.maxSets       = count; // 총 몇 개의 descriptor set을 만들건지
-  poolInfo.flags         = 0;     // VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT 등 가능
+  poolInfo.flags         = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;     // VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT 등 가능
   if (vkCreateDescriptorPool(device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS)
   {
     throw std::runtime_error("failed to create descriptor pool!");

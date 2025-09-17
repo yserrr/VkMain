@@ -1,6 +1,6 @@
 #include <glm/glm.hpp>
 #include <common.hpp>
-#include <buffer.hpp>
+#include <static_buffer.hpp>
 #define MAX_LIGHTS 16
 #ifndef LIGHT_HPP
 #define LIGHT_HPP
@@ -13,11 +13,11 @@ enum class LightType{
 
 struct Light{
   glm::vec3 position;  // for point/spot
-  int       type;      // casted from LightType
+  int type;            // casted from LightType
   glm::vec3 direction; // for directional/spot
-  float     angle;     // for spot light only
+  float angle;         // for spot light only
   glm::vec3 color;
-  float     intensity;
+  float intensity;
 };
 
 struct GPULight{
@@ -27,7 +27,7 @@ struct GPULight{
 };
 
 struct lightUBO{
-  GPULight        lights[MAX_LIGHTS];
+  GPULight lights[MAX_LIGHTS];
   alignas(16) int lightCount;
 };
 
@@ -40,7 +40,7 @@ public:
   {
 ///
     ubo.lightCount = 0;
-    buffer         = std::make_unique<Buffer>(allocator, sizeof(lightUBO), BufferType::Uniform);
+    buffer         = std::make_unique<StaticBuffer>(allocator, sizeof(lightUBO), BufferType::UNIFORM);
     buffer->createUniformBuffer();
   }
 
@@ -63,7 +63,7 @@ public:
     VkWriteDescriptorSet lightWrite{};
     lightWrite.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     lightWrite.dstSet          = set;
-    lightWrite.dstBinding      = 0; //layout space
+    lightWrite.dstBinding      = 1;
     lightWrite.dstArrayElement = 0;
     lightWrite.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     lightWrite.descriptorCount = 1;
@@ -77,10 +77,10 @@ public:
   }
 
 private:
-  VkDevice                device;
-  MemoryAllocator &       allocator;
-  std::unique_ptr<Buffer> buffer;
-  lightUBO                ubo;
+  VkDevice device;
+  MemoryAllocator &allocator;
+  std::unique_ptr<StaticBuffer> buffer;
+  lightUBO ubo;
 };
 
 #endif

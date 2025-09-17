@@ -5,7 +5,7 @@
 #include "spdlog/spdlog.h"
 
 extern PFN_vkSetDebugUtilsObjectNameEXT g_pfnSetDebugUtilsObjectNameEXT; // for VkDevice objects
-extern PFN_vkSetDebugUtilsObjectTagEXT  g_pfnSetDebugUtilsObjectTagEXT;  // if using tags
+extern PFN_vkSetDebugUtilsObjectTagEXT g_pfnSetDebugUtilsObjectTagEXT;   // if using tags
 // 필요한 다른 디버그 유틸리티 함수 포인터들도 extern으로 선언
 // 예: PFN_vkCmdBeginDebugUtilsLabelEXT, PFN_vkCmdEndDebugUtilsLabelEXT 등
 namespace VulkanObjectHelpers{
@@ -145,9 +145,9 @@ MemoryAllocator::~MemoryAllocator()
   }
 }
 
-Allocation MemoryAllocator::allocate(VkMemoryRequirements  requirements,
+Allocation MemoryAllocator::allocate(VkMemoryRequirements requirements,
                                      VkMemoryPropertyFlags desiredFlags,
-                                     const std::string &   debugName)
+                                     const std::string &debugName)
 {
   uint32_t memoryType = findMemoryType(requirements.memoryTypeBits, desiredFlags);
   for (auto *pool: pools)
@@ -157,21 +157,19 @@ Allocation MemoryAllocator::allocate(VkMemoryRequirements  requirements,
       Allocation result;
       if (pool->allocate(requirements.size, requirements.alignment, result))
       {
+        if (pool->mapped)
+          result.maped = pool->persistent_;
         return result;
       }
     }
   }
   VkDeviceSize poolSize = std::max(requirements.size * 8, (VkDeviceSize) 256 * 1024 * 1024); // 256MB 기본
-  MemoryPool * newPool  = new MemoryPool(device, memoryType, poolSize);
+  MemoryPool *newPool   = new MemoryPool(device, memoryType, poolSize);
   pools.push_back(newPool);
   Allocation result;
   if (!newPool->allocate(requirements.size, requirements.alignment, result))
   {
     throw std::runtime_error("Failed to allocate memory from new pool");
-  }
-  if (desiredFlags != VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
-  {
-    result.maped = newPool->map();
   }
   return result;
 }
@@ -186,7 +184,7 @@ void MemoryAllocator::free(Allocation allocation, VkDeviceSize size)
       return;
     }
   }
-  throw std::runtime_error("Tried to free memory from unknown pool");
+  //throw std::runtime_error("Tried to free memory from unknown pool");
 }
 
 VkDevice MemoryAllocator::getDevice()
@@ -215,46 +213,40 @@ uint32_t MemoryAllocator::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFl
   throw std::runtime_error("Failed to find suitable memory type");
 }
 
-// 버퍼 생성 및 메모리 할당/바인딩
 VkResult MemoryAllocator::createBuffer(const VkBufferCreateInfo *pCreateInfo,
-                                       VkMemoryPropertyFlags     desiredFlags,
-                                       VkBuffer *                pBuffer,
-                                       Allocation *              pAllocation,
-                                       const std::string &       debugName)
+                                       VkMemoryPropertyFlags desiredFlags,
+                                       VkBuffer *pBuffer,
+                                       Allocation *pAllocation,
+                                       const std::string &debugName)
 {
-  //VkBuffer 핸들 생성
   VkResult result = vkCreateBuffer(device, pCreateInfo, nullptr, pBuffer);
   if (result != VK_SUCCESS)
   {
     spdlog::error("Failed to create VkBuffer '{}'! Result: {}", debugName, static_cast<int>(result));
     return result;
   }
-  //해당 VkBuffer에 필요한 메모리 요구사항 조회
   VkMemoryRequirements memRequirements;
   vkGetBufferMemoryRequirements(device, *pBuffer, &memRequirements);
-  // MemoryAllocator를 통해 실제 GPU 메모리 할당
   try
   {
-    *pAllocation = allocate(memRequirements, desiredFlags, debugName); // 할당 시점에 디버그 이름 전달
+    *pAllocation = allocate(memRequirements, desiredFlags, debugName);
   } catch (const std::runtime_error &e)
   {
     spdlog::error("Failed to allocate memory for VkBuffer '{}'! Error: {}", debugName, e.what());
-    vkDestroyBuffer(device, *pBuffer, nullptr); // 버퍼 생성 취소
-    return VK_ERROR_OUT_OF_DEVICE_MEMORY;       // 또는 다른 적절한 에러 코드
+    vkDestroyBuffer(device, *pBuffer, nullptr);
+    return VK_ERROR_OUT_OF_DEVICE_MEMORY;
   }
-  //  VkBuffer 객체에 할당된 메모리 바인딩
   result = vkBindBufferMemory(device, *pBuffer, pAllocation->memory, pAllocation->offset);
   if (result != VK_SUCCESS)
   {
     spdlog::error("Failed to bind memory to VkBuffer '{}'! Result: {}", debugName, static_cast<int>(result));
-    free(*pAllocation, pAllocation->size);      // 할당된 메모리 해제
-    vkDestroyBuffer(device, *pBuffer, nullptr); // 버퍼 객체 파괴
+    free(*pAllocation, pAllocation->size);
+    vkDestroyBuffer(device, *pBuffer, nullptr);
     return result;
   }
-  // 디버그 이름 설정 (확장이 활성화되어 있다면)
   VulkanObjectHelpers::SetVulkanObjectName(device, *pBuffer, debugName);
-  VulkanObjectHelpers::SetVulkanObjectName(device, pAllocation->memory, debugName + "_Mem"); // 할당된 메모리에도 이름 붙이기
-  pAllocation->type = AllocationType::BUFFER;                                                // Allocation 타입 설정
+  VulkanObjectHelpers::SetVulkanObjectName(device, pAllocation->memory, debugName + "_Mem");
+  pAllocation->type = AllocationType::BUFFER;
   spdlog::info("VkBuffer '{}' created and memory allocated/bound successfully. Size: {}, Offset: {}, MemType: {}",
                debugName,
                pCreateInfo->size,
@@ -265,10 +257,10 @@ VkResult MemoryAllocator::createBuffer(const VkBufferCreateInfo *pCreateInfo,
 }
 
 VkResult MemoryAllocator::createImage(const VkImageCreateInfo *pCreateInfo,
-                                      VkMemoryPropertyFlags    desiredFlags,
-                                      VkImage *                pImage,
-                                      Allocation *             pAllocation,
-                                      const std::string &      debugName)
+                                      VkMemoryPropertyFlags desiredFlags,
+                                      VkImage *pImage,
+                                      Allocation *pAllocation,
+                                      const std::string &debugName)
 {
   VkResult result = vkCreateImage(device, pCreateInfo, nullptr, pImage);
   if (result != VK_SUCCESS)
@@ -324,7 +316,7 @@ void MemoryAllocator::destroyBuffer(VkBuffer buffer, const Allocation &allocatio
   //if allocation mapped -> free
   if (VK_VALID(allocation.memory))
   {
-    free(allocation,allocation.size);
+    free(allocation, allocation.size);
   }
   spdlog::info("VkBuffer '{}' and its memory freed.", allocation.debugName);
 }

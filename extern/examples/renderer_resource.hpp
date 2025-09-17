@@ -28,7 +28,6 @@ struct BatchContext{
   VkBuffer vertexBuffer   = VK_NULL_HANDLE;
   VkBuffer indexBuffer    = VK_NULL_HANDLE;
   VkBuffer instanceBuffer = VK_NULL_HANDLE;
-  VkBuffer materialBuffer = VK_NULL_HANDLE;
   uint32_t indexCount      = 0;
   std::vector<Submesh> submeshes;
 };

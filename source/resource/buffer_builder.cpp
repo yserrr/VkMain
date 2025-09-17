@@ -8,8 +8,8 @@
 
 BufferBuilder::BufferBuilder(
     MemoryAllocator &allocator,
-    BufferType       type,
-    AccessPolicy     policy
+    BufferType type,
+    AccessPolicy policy
   )
   : device_(allocator.getDevice()),
     allocator_(allocator),
@@ -24,7 +24,7 @@ BufferBuilder::~BufferBuilder()
   }
 }
 
-void BufferBuilder::buildBuffer(BufferContext &context, VkDeviceSize size, const char *debugName)
+BufferContext BufferBuilder::buildBuffer(VkDeviceSize size, const char *debugName)
 {
   decidePolicy();
   VkBufferCreateInfo ci{VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO};
@@ -37,16 +37,20 @@ void BufferBuilder::buildBuffer(BufferContext &context, VkDeviceSize size, const
                                      VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) :
                                     (VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-  VkBuffer   newBuffer = VK_NULL_HANDLE;
+  VkBuffer newBuffer = VK_NULL_HANDLE;
   Allocation newAllocation{};
   VK_ASSERT(allocator_.createBuffer(&ci, desired, &newBuffer, &newAllocation, debugName));
-  context.buffer     = newBuffer;
-  context.allocation = newAllocation;
-  if (desired | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
-  {
-    context.mapped = newAllocation.maped;
-  }
-  allocations[newBuffer] = newAllocation;
+  BufferContext buffer{};
+  buffer.buffer = newBuffer;
+  buffer.allocation = newAllocation;
+  return buffer;
+}
+
+std::shared_ptr<StaticBuffer> BufferBuilder::buildStaticBuffer(VkDeviceSize size, const char *debugName)
+{
+  std::shared_ptr<StaticBuffer> buffer = std::make_shared<StaticBuffer>(allocator_,size ,BufferType::UNIFORM);
+  buffer->createUniformBuffer();
+  return buffer;
 }
 
 void BufferBuilder::decidePolicy()

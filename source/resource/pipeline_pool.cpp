@@ -1,6 +1,6 @@
-#include<pipeline.hpp>
-#include<constant.hpp>
 
+#include<constant.hpp>
+#include <pipeline_pool.hpp>
 PipelinePool::PipelinePool(
     const PipelinePoolCreateInfo &info
   ) :
@@ -42,15 +42,7 @@ PipelinePool::~PipelinePool()
 
 VkPipeline PipelinePool::createPipeline(const PipelineCreatePass &pass)
 {
-  PipelineProgram program{};
-  program.cullMode         = pass.cullMode;
-  program.depthCompareOp   = pass.depthCompareOp;
-  program.depthTestEnable  = pass.depthTestEnable;
-  program.depthWriteEnable = pass.depthWriteEnable;
-  program.topology         = pass.topology;
-  program.fragShaderModule = pass.fragShaderModule;
-  program.vertShaderModule = pass.vertShaderModule;
-  if (getPipeline(program) == VK_NULL_HANDLE)
+  if (getPipeline(pass) == VK_NULL_HANDLE)
   {
     return createPipeline(pass.type,
                           pass.vertShaderModule,
@@ -59,7 +51,7 @@ VkPipeline PipelinePool::createPipeline(const PipelineCreatePass &pass)
                           pass.colorFormatCount
       );
   }
-  return getPipeline(program);
+  return getPipeline(pass);
 }
 
 void PipelinePool::createComputePipeline(
@@ -70,7 +62,7 @@ void PipelinePool::createComputePipeline(
   //push constant setting
   VkPushConstantRange pushConstant{};
   pushConstant.offset     = 0;
-  pushConstant.size       = sizeof(gpu::constant);
+  //pushConstant.size       = sizeof(gpu::constant);
   pushConstant.stageFlags = VK_SHADER_STAGE_COMPUTE_BIT;
   //if need -> create and layout setting
   VkPipelineLayoutCreateInfo computeLayout{};
@@ -103,7 +95,7 @@ void PipelinePool::createComputePipeline(
 }
 
 VkPipeline PipelinePool::getPipeline(
-    PipelineProgram program
+    PipelineCreatePass program
   ) const
 {
   auto it = pipelineHash_.find(program);

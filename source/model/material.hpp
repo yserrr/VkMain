@@ -9,10 +9,6 @@ struct MatMeta;
 using MAT_ID = std::string;
 
 
-/// todo ; current:
-///  material map -> indexing
-///  string -> unordered map control
-
 class Material{
   friend class UIControler;
 public:
@@ -45,7 +41,6 @@ private:
   std::unordered_map<MAT_ID, uint32_t> settedMat_;
 };
 
-//todo: update material map
 //void setMapUV(MaterialMap map, float tilingU, float tilingV, float offsetU, float offsetV);
 //void setMapStrength(MaterialMap map, float s);
 #endif

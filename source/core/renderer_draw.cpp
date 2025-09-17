@@ -1,32 +1,7 @@
 #include<renderer.hpp>
 
-void SceneRenderer::createPipeline(std::vector<VkDescriptorSetLayout> *layout_h)
-{
-  fragShader = std::make_unique<ShaderModule>(device_h);
-  vertShader = std::make_unique<ShaderModule>(device_h);
-  fragShader->setShader(fragPath, shaderc_fragment_shader);
-  vertShader->setShader(vertPath, shaderc_vertex_shader);
-  vkCmdSetPolygonModeEXT = (PFN_vkCmdSetPolygonModeEXT) vkGetDeviceProcAddr(device_h, "vkCmdSetPolygonModeEXT");
-  if (!vkCmdSetPolygonModeEXT)
-  {
-    throw std::runtime_error("vkCmdSetPolygonModeEXT not available!");
-  }
-  PipelineCreateInfo info;
-  info.device               = device_h;
-  info.extent               = swapchain->getExtent();
-  info.renderPass           = renderpass_h;
-  info.vertShaderModule     = vertShader->get();
-  info.fragShaderModule     = fragShader->get();
-  info.descriptorSetLayouts = layout_h;
-  pipeline                  = std::make_unique<GraphicsPipeline>(info);
-  pipeline_layout_h         = pipeline->getLayout();
-  pipeline_h                = pipeline->get();
-  spdlog::info("create pipeline");
-}
-
 void SceneRenderer::setUp(VkCommandBuffer command)
 {
-  spdlog::info("draw call");
   vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_h); // 파이프라인 바인딩
   vkCmdSetPolygonModeEXT(command, polygonMode);
   vkCmdSetDepthTestEnable(command, depthTest);
@@ -41,8 +16,6 @@ void SceneRenderer::setUp(VkCommandBuffer command)
   scissor.offset = {0, 0};
   scissor.extent = swapchain->getExtent();
   vkCmdSetScissor(command, 0, 1, &scissor);
-  resourceManager.mesh->bind(command);
-  resourceManager.mesh->draw(command);
 }
 
 void SceneRenderer::draw(VkCommandBuffer command)
@@ -53,7 +26,7 @@ void SceneRenderer::draw(VkCommandBuffer command)
   if (viewMode == ViewMode::MultiView)
   {
     // swapchain 크기 가져오기
-    auto  extent     = swapchain->getExtent();
+    auto extent      = swapchain->getExtent();
     float halfWidth  = extent.width / 2.0f;
     float halfHeight = extent.height / 2.0f;
     for (uint32_t i = 0; i < 4; i++)
@@ -71,8 +44,11 @@ void SceneRenderer::draw(VkCommandBuffer command)
       scissor.offset = {static_cast<int32_t>(viewport.x), static_cast<int32_t>(viewport.y)};
       scissor.extent = {static_cast<uint32_t>(viewport.width), static_cast<uint32_t>(viewport.height)};
       vkCmdSetScissor(command, 0, 1, &scissor);
-      resourceManager.mesh->bind(command);
-      resourceManager.mesh->draw(command);
+      for (auto &mesh: resourceManager.meshes_)
+      {
+        mesh.second->bind(command);
+        mesh.second->draw(command);
+      }
     }
   } else
   {
@@ -88,8 +64,12 @@ void SceneRenderer::draw(VkCommandBuffer command)
     scissor.offset = {0, 0};
     scissor.extent = swapchain->getExtent();
     vkCmdSetScissor(command, 0, 1, &scissor);
-    resourceManager.mesh->bind(command);
-    resourceManager.mesh->draw(command);
+
+    for (auto &mesh: resourceManager.meshes_)
+    {
+      mesh.second->bind(command);
+      mesh.second->draw(command);
+    }
   }
 }
 

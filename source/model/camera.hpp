@@ -4,19 +4,21 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <buffer.hpp>
+#include <static_buffer.hpp>
 #include <common.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 struct camCreateInfo{
-  float            fov;
-  float            aspectRatio;
-  float            nearPlane;
-  float            farPlane;
+  float fov;
+  float aspectRatio;
+  float nearPlane;
+  float farPlane;
   MemoryAllocator *allocator;
 };
 
 class Camera{
+  friend class ResourceManager;
+
 public:
   Camera(camCreateInfo info);
   void camUpdate();
@@ -34,7 +36,6 @@ public:
   void moveLeft();
   void directionReverse();
   void addFov(float dt);
-
   void addQuaterian(float dYawDeg, float dPitDeg);
 
 private:
@@ -43,21 +44,21 @@ private:
     glm::mat4 proj;
   } ubo;
 
-  MemoryAllocator &       allocator;
-  std::unique_ptr<Buffer> buffer;
-  glm::vec3               position;
-  glm::vec3               direction_;
-  glm::vec3               right_;
-  glm::vec3               up;
-  VkDevice                device;
-  float                   fov;
-  float                   aspect;
-  float                   nearPlane;
-  float                   farPlane;
-  float                   delta = 1;
-  float                   yaw;
-  float                   pitch;
-  glm::quat               orientation_{};
+  MemoryAllocator &allocator;
+  std::unique_ptr<StaticBuffer> buffer;
+  glm::vec3 position;
+  glm::vec3 direction_;
+  glm::vec3 right_;
+  glm::vec3 up;
+  VkDevice device;
+  float fov;
+  float aspect;
+  float nearPlane;
+  float farPlane;
+  float delta = 1;
+  float yaw;
+  float pitch;
+  glm::quat orientation_{};
 };
 
 #endif // CAMERA_HPP

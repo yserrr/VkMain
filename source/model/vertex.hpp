@@ -15,13 +15,11 @@ struct VertexPC{
   glm::vec3 color;
 };
 
-
 struct VertexPUVN{
   glm::vec3 position;
   glm::vec2 uv;
   glm::vec3 normal;
 };
-
 
 struct VertexPUVNTC{
   glm::vec3 position;
@@ -31,7 +29,6 @@ struct VertexPUVNTC{
   glm::vec3 bitangent;
   glm::vec3 color;
 };
-
 
 struct VertexAll{
   glm::vec3 position;     // location = 0

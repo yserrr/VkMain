@@ -4,16 +4,19 @@
 #include <engine.hpp>
 #include <engine_vk_context.hpp>
 #include <set>
+Engine::Engine()
+{
+}
 
 const std::vector<const char *> validationLayers = {
 "VK_LAYER_KHRONOS_validation"
 };
 
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-  VkDebugUtilsMessageSeverityFlagBitsEXT      messageSeverity,
-  VkDebugUtilsMessageTypeFlagsEXT             messageType,
+  VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+  VkDebugUtilsMessageTypeFlagsEXT messageType,
   const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-  void *                                      pUserData)
+  void *pUserData)
 {
   if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
   {
@@ -31,10 +34,10 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
   return VK_FALSE;
 }
 
-PFN_vkCreateDebugUtilsMessengerEXT  vkCreateDebugUtilsMessengerEXT_ptr  = nullptr;
+PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT_ptr   = nullptr;
 PFN_vkDestroyDebugUtilsMessengerEXT vkDestroyDebugUtilsMessengerEXT_ptr = nullptr;
-PFN_vkSetDebugUtilsObjectNameEXT    g_pfnSetDebugUtilsObjectNameEXT     = nullptr;
-PFN_vkSetDebugUtilsObjectTagEXT     g_pfnSetDebugUtilsObjectTagEXT      = nullptr;
+PFN_vkSetDebugUtilsObjectNameEXT g_pfnSetDebugUtilsObjectNameEXT        = nullptr;
+PFN_vkSetDebugUtilsObjectTagEXT g_pfnSetDebugUtilsObjectTagEXT          = nullptr;
 
 inline void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo)
 {
@@ -58,9 +61,10 @@ void Engine::vkDeviceload()
   glfwInit();
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); //need to change
-  window_h                   = glfwCreateWindow(extent.width, extent.height, title, nullptr, nullptr);
-  GLFWmonitor *      primary = glfwGetPrimaryMonitor();
-  const GLFWvidmode *mode    = glfwGetVideoMode(primary);
+  glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+  window_h                = glfwCreateWindow(extent.width, extent.height, title, nullptr, nullptr);
+  GLFWmonitor *primary    = glfwGetPrimaryMonitor();
+  const GLFWvidmode *mode = glfwGetVideoMode(primary);
 
   int winWidth  = extent.width;
   int winHeight = extent.height;
@@ -70,7 +74,7 @@ void Engine::vkDeviceload()
   glfwSetWindowPos(window_h, centerX, centerY);
 
   InstanceCreateInfo instance_info{};
-  bool               enableValidation = instance_info.enableValidation;
+  bool enableValidation = instance_info.enableValidation;
 
   VkApplicationInfo appInfo{};
   appInfo.sType              = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -81,9 +85,9 @@ void Engine::vkDeviceload()
   appInfo.apiVersion         = instance_info.apiVersion;
 
   std::vector<const char *> enableExtensions;
-  uint32_t                  glfwExtensionCount = 0;
+  uint32_t glfwExtensionCount = 0;
 
-  const char **             glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+  const char **glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
   std::vector<const char *> requiredExtensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
   if (enableValidation)
@@ -128,7 +132,7 @@ void Engine::vkDeviceload()
   enableExtensions = requiredExtensions;
 
   VkDebugUtilsMessengerEXT debugMessenger;
-  VkInstanceCreateInfo     vkCreateInfo{};
+  VkInstanceCreateInfo vkCreateInfo{};
   vkCreateInfo.sType                   = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   vkCreateInfo.pApplicationInfo        = &appInfo;
   vkCreateInfo.ppEnabledExtensionNames = enableExtensions.data();
@@ -263,7 +267,7 @@ void Engine::vkDeviceload()
     }
 
     QueueFamilyIndices indices;
-    uint32_t           queueFamilyCount = 0;
+    uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(physical_device, &queueFamilyCount, nullptr);
 
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
@@ -357,7 +361,7 @@ void Engine::vkDeviceload()
   };
 
   std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-  float                                queuePriority = 1.0f;
+  float queuePriority = 1.0f;
 
   for (uint32_t queueFamily: uniqueQueueFamilies)
   {
@@ -370,12 +374,12 @@ void Engine::vkDeviceload()
   }
 
   const std::vector<const char *> requiredDeviceExtensions = {
-    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-    VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME,
-    VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME,
-    VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
+  VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+  VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME,
+  VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME,
+  VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
   };
-  uint32_t                        deviceExtensionCount;
+  uint32_t deviceExtensionCount;
   vkEnumerateDeviceExtensionProperties(physical_device_h, nullptr, &deviceExtensionCount, nullptr);
   std::vector<VkExtensionProperties> deviceAvailableExtensions(deviceExtensionCount);
   vkEnumerateDeviceExtensionProperties(physical_device_h,

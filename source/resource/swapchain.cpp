@@ -10,7 +10,7 @@ Swapchain::Swapchain(const SwapchainCreateInfo &info) :
   if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(info.physicalDevice, info.surface, &capabilities) != VK_SUCCESS)
     throw std::runtime_error("fail to find surface capability");
   VkSurfaceFormatKHR surfaceFormat = chooseSurfaceFormat(info.physicalDevice, info.surface);
-  VkPresentModeKHR   presentMode   = choosePresentMode(info.physicalDevice, info.surface);
+  VkPresentModeKHR presentMode     = choosePresentMode(info.physicalDevice, info.surface);
   windowExtent                     = chooseExtent(capabilities, windowExtent);
   uint32_t imageCount              = capabilities.minImageCount + 1;
   if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount)

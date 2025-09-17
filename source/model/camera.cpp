@@ -21,7 +21,7 @@ Camera::Camera(camCreateInfo info)
   right_ = glm::normalize(right_);
 
   device = allocator.getDevice();
-  buffer = std::make_unique<Buffer>(allocator, sizeof(cameraUBO), BufferType::Uniform);
+  buffer = std::make_unique<StaticBuffer>(allocator, sizeof(cameraUBO), BufferType::UNIFORM);
   buffer->createUniformBuffer();
   camUpdate();
   spdlog::info("set camera");
@@ -31,26 +31,8 @@ void Camera::camUpdate()
 {
   ubo.view = getViewMatrix();
   ubo.proj = getProjectionMatrix();
-  buffer->loadData(&ubo, sizeof(cameraUBO));
 }
 
-//upload camera descriptors for camera information
-void Camera::uploadDescriptor(VkDescriptorSet set)
-{
-  VkDescriptorBufferInfo bufferInfo{};
-  bufferInfo.buffer = buffer->getBuffer()[0];
-  bufferInfo.offset = 0;
-  bufferInfo.range  = sizeof(ubo);
-  VkWriteDescriptorSet descriptorWrite{};
-  descriptorWrite.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-  descriptorWrite.dstSet          = set;
-  descriptorWrite.dstBinding      = 0;
-  descriptorWrite.dstArrayElement = 0;
-  descriptorWrite.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  descriptorWrite.descriptorCount = 1;
-  descriptorWrite.pBufferInfo     = &bufferInfo;
-  vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
-}
 
 void Camera::setSpeed(float ds)
 {

@@ -137,6 +137,5 @@ struct PipelineUsage{
   static_cast<uint32_t>(PipelineUsageFlag::CULL_NULL);
 };
 
-#endif //MYPROJECT_PIPELINE_CFG_HPP
 
 #endif //MYPROJECT_PIPELINE_CFG_HPP

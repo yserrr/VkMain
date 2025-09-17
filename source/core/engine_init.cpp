@@ -23,7 +23,7 @@ void Engine::initialize()
   imageManagerInfo.format    = imageformat_h;
   imageManagerInfo.extent    = extent;
   imageManagerInfo.allocator = allocator.get();
-  imageManager               = std::make_unique<ImageViewManager>(imageManagerInfo);
+  imageManager               = std::make_unique<SwapchainViewManager>(imageManagerInfo);
   spdlog::info("create Image Manager");
 
   //createCommandPool
@@ -39,7 +39,6 @@ void Engine::initialize()
   commandManagerInfo.frameCount  = frameCount;
   commandBufferManager           = std::make_unique<CommandPoolManager>(commandManagerInfo);
   spdlog::info("create command buffers");
-
 
   RenderPassPoolCreateInfo renderpassInfo;
   renderpassInfo.device      = device_h;
@@ -57,10 +56,7 @@ void Engine::initialize()
   frameBufferManager         = std::make_unique<FramebufferPool>(frameBufferInfo);
   spdlog::info("create Frame buffers");
 
-  descriptorManager = std::make_unique<DescriptorManager>(device_h);
-  descriptorManager->allocateDescriptor();
   spdlog::info("allocate descriptors");
-  sets = descriptorManager->getSets();
 
   SignalCreateInfo signalInfo;
   signalInfo.device               = device_h;
@@ -75,12 +71,9 @@ void Engine::initialize()
   resource_manager_create_info.allocator = allocator.get();
 
   resource_manager_ = std::make_unique<ResourceManager>(resource_manager_create_info);
-  resource_manager_->setCamera(extent);
   resource_manager_->setTexture();
-  resource_manager_->setLight();
 
   spdlog::info("init renderer");
-
   RendererCreateInfo renderinfo{};
   renderinfo.window       = window_h;
   renderinfo.device_h     = device_h;
@@ -91,7 +84,8 @@ void Engine::initialize()
   renderinfo.imageManager = imageManager.get();
   renderinfo.renderPass   = renderpass_h;
   sceneRenderer           = std::make_unique<SceneRenderer>(renderinfo);
-  sceneRenderer->createPipeline((descriptorManager->getLayouts()));
+  sceneRenderer->createPipeline((resource_manager_->descriptorManager->getLayouts()));
+
   pipeline_layout_h = sceneRenderer->getPipelineLayout();
 
   UIRendererCreateInfo UIinfo;
@@ -104,20 +98,14 @@ void Engine::initialize()
   UIinfo.present_family    = present_family;
   UIinfo.graphics_q        = graphics_q;
   uiRenderer               = std::make_unique<UIRenderer>(UIinfo);
-
+  uiRenderer->setResourceManager(resource_manager_.get());
 
   Camera *cam = resource_manager_->getCamera();
+
   sceneRenderer->setCamera(cam);
   eventManager_->setCamera(cam);
-  resource_manager_->uploadDescriptors(sets);
+
+  resource_manager_->uploadDescriptors();
 
   eventManager_->setRenderer(sceneRenderer.get());
-
-
-
-
 }
-
-
-
-

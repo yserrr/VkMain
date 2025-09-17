@@ -1,21 +1,25 @@
-#include<buffer.hpp> 
+#include<static_buffer.hpp>
 
-Buffer::Buffer(MemoryAllocator &allocator, VkDeviceSize bufferSize, BufferType type): allocator(allocator),
-                                                                                      bufferSize(bufferSize),
-                                                                                      type(type) {
+StaticBuffer::StaticBuffer(MemoryAllocator &allocator, VkDeviceSize bufferSize, BufferType type) : allocator(allocator),
+                                                                                       bufferSize(bufferSize),
+                                                                                       type(type)
+{
   device         = allocator.getDevice();
   physicalDevice = allocator.getPhysicalDevice();
   bool STAGE     = stage(type);
 }
 
-Buffer::~Buffer() {
+StaticBuffer::~StaticBuffer()
+{
   vkDeviceWaitIdle(device);
   if (stagingBuffer != VK_NULL_HANDLE) vkDestroyBuffer(device, stagingBuffer, nullptr);
   if (buffer != VK_NULL_HANDLE)vkDestroyBuffer(device, buffer, nullptr);
   allocator.free(stagingAllocation, bufferSize);
   allocator.free(allocation, bufferSize);
 }
-void               Buffer::copyBuffer(VkCommandBuffer commandBuffer) {
+
+void StaticBuffer::copyBuffer(VkCommandBuffer commandBuffer)
+{
   VkDeviceSize offsets = 0;
   VkBufferCopy bufferCopy{};
   bufferCopy.srcOffset = 0;
@@ -23,7 +27,9 @@ void               Buffer::copyBuffer(VkCommandBuffer commandBuffer) {
   bufferCopy.size      = bufferSize;
   vkCmdCopyBuffer(commandBuffer, stagingBuffer, buffer, 1, &bufferCopy);
 }
-void               Buffer::createMainBuffer() {
+
+void StaticBuffer::createMainBuffer()
+{
   VkBufferCreateInfo bufferInfo{};
   bufferInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   bufferInfo.size        = bufferSize;
@@ -45,7 +51,9 @@ void               Buffer::createMainBuffer() {
     spdlog::info("falil to bind buffer to memory");
   }
 }
-void               Buffer::createUniformBuffer() {
+
+void StaticBuffer::createUniformBuffer()
+{
   VkBufferCreateInfo bufferInfo{};
   bufferInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
   bufferInfo.size        = bufferSize;
@@ -68,13 +76,17 @@ void               Buffer::createUniformBuffer() {
     spdlog::info("falil to bind buffer to memory");
   }
 }
-void               Buffer::loadData(const void *data, VkDeviceSize size) {
+
+void StaticBuffer::loadData(const void *data, VkDeviceSize size)
+{
   void *bufferData;
   vkMapMemory(device, allocation.memory, allocation.offset, size, 0, &bufferData);
   memcpy(bufferData, data, (size_t) size);
   vkUnmapMemory(device, allocation.memory);
 }
-void               Buffer::getStagingBuffer(const void *data) { ///
+
+void StaticBuffer::getStagingBuffer(const void *data)
+{ ///
 
   VkBufferCreateInfo bufferInfo{};
   bufferInfo.sType       = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -99,36 +111,44 @@ void               Buffer::getStagingBuffer(const void *data) { ///
   memcpy(bufferData, data, (size_t) bufferSize);
   vkUnmapMemory(device, stagingAllocation.memory);
 }
-const VkBuffer *   Buffer::getBuffer() {
+
+const VkBuffer *StaticBuffer::getBuffer()
+{
   return &buffer;
 }
-const VkBuffer     Buffer::getStagingBuffer() {
+
+const VkBuffer StaticBuffer::getStagingBuffer()
+{
   return stagingBuffer;
 }
-bool               Buffer::stage(BufferType type) {
+
+bool StaticBuffer::stage(BufferType type)
+{
   switch (type)
   {
-    case BufferType::Vertex:
-    case BufferType::Index:
-    case BufferType::Stage:
+    case BufferType::VERTEX:
+    case BufferType::INDEX:
+    case BufferType::STAGE:
       return true;
-    case BufferType::Uniform:
-    case BufferType::Storage:
+    case BufferType::UNIFORM:
+    case BufferType::STORAGE:
       return false;
   }
   return false; // or assert
 }
-VkBufferUsageFlags Buffer::getUsageFlags(BufferType type) {
+
+VkBufferUsageFlags StaticBuffer::getUsageFlags(BufferType type)
+{
   switch (type)
   {
-    case BufferType::Vertex:
+    case BufferType::VERTEX:
       return VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-    case BufferType::Index:
+    case BufferType::INDEX:
       return VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-    case BufferType::Uniform:
+    case BufferType::UNIFORM:
       return VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-    case BufferType::Storage:
+    case BufferType::STORAGE:
       return VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
   }
-  return 0; // or assert
+  return 0; //
 }

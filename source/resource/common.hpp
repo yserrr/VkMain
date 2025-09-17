@@ -34,5 +34,4 @@ throw std::runtime_error("VkResult failed: " #x);             \
 }                                                                 \
 } while (0)
 
-
 #endif //COMMON_HPP

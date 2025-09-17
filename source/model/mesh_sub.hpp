@@ -8,6 +8,7 @@
 #include <glm/vec3.hpp>
 #include <vector>
 #include <vertex.hpp>
+
 enum class Topology: uint32_t{
   POINT,
   LINE,
@@ -25,20 +26,18 @@ struct Submesh{
   uint32_t vertexOffset = 0; // vertices 배열 내 오프셋
 };
 
-
 struct mesh_cmd{
-  mesh_cmd
-    (
-      const VertexAll* vData,
-      const uint32_t* iData,
-      const std::vector<Submesh>& submeshes
+  mesh_cmd(
+      const VertexAll *vData,
+      const uint32_t *iData,
+      const std::vector<Submesh> &submeshes
     )
-  : vData(vData),
-    iData(iData),
-    submeshes(submeshes) {}
+    : vData(vData),
+      iData(iData),
+      submeshes(submeshes) {}
 
-  const VertexAll* vData;
-  const uint32_t* iData;
+  const VertexAll *vData;
+  const uint32_t *iData;
   uint32_t indexCnt    = 0;
   uint32_t vertexCnt   = 0;
   uint64_t vBufferSize = 0;
@@ -47,11 +46,7 @@ struct mesh_cmd{
   uint64_t gblIBOffset = 0;
   Topology topology    = Topology::TRIANGLE;
   IndexType indexType  = IndexType::UINT32;
-  const std::vector<Submesh>& submeshes;
+  const std::vector<Submesh> &submeshes;
 };
-
-
-
-
 
 #endif //MYPROJECT_MESH_SUB_HPP
