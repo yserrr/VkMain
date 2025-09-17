@@ -42,12 +42,13 @@ enum class ViewMode{
 };
 
 class SceneRenderer{
+  friend class Engine;
   friend class EventManager;
 
 public:
   SceneRenderer(RendererCreateInfo info);
   ~SceneRenderer() {}
-
+  void pushConstant(VkCommandBuffer cmdBuffer);
   void createPipeline(std::vector<VkDescriptorSetLayout> *layout_h);
   void setUp(VkCommandBuffer command);
   void draw(VkCommandBuffer command);
@@ -99,7 +100,5 @@ private:
   MemoryAllocator &allocator;
 //temp ;
   VkDeviceSize offsets = 0;
-//function
-  void pushConstant(VkCommandBuffer command, Material material);
 };
 #endif

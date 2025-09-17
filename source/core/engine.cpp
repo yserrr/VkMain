@@ -6,6 +6,8 @@ void Engine::run()
   vkDeviceload();
   initialize();
   setUp();
+  vkDeviceWaitIdle(device_h);
+  uiRenderer ->uploadBackgroundImage();
   spdlog::info("render set up");
   while (!glfwWindowShouldClose(window_h))
   {
@@ -49,11 +51,11 @@ void Engine::run()
     sceneRenderer->draw(command);
     vkCmdNextSubpass(command, VK_SUBPASS_CONTENTS_INLINE);
 
-    //uiRenderer->rec(command);
-    //uiRenderer->drawcall(command);
-    //uiRenderer->drawTransition(command);
-    //uiRenderer->rec(command);
-    uiRenderer->draw(command);
+    uiRenderer->rec(command);
+    uiRenderer->drawcall(command);
+    uiRenderer->drawTransition(command);
+    uiRenderer->render(command);
+    //uiRenderer->draw(command);
     vkCmdEndRenderPass(command);
     summitQueue(command, imageIndex_);
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
@@ -83,7 +85,7 @@ void Engine::setUp()
   imageIndex_             = swapchain->getImageIndex(semaphore);
   VkCommandBuffer command = rec(imageIndex_);
   resource_manager_->loadMesh(command, "sphere.gltf");
-  uiRenderer->uploadBackgroundImage(command, "VkVideo.png");
+  resource_manager_->loadTexture(command, "VkVideo.png");
   resource_manager_->updateDescriptorSet(currentFrame);
   vkCmdBeginRenderPass(command, &renderPassInfos[imageIndex_], VK_SUBPASS_CONTENTS_INLINE); // RenderPass 시작
   sceneRenderer->setUp(command);

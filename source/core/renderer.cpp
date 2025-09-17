@@ -18,6 +18,18 @@ SceneRenderer::SceneRenderer(RendererCreateInfo info) : device_h(info.device_h),
                                                         allocator(*info.allocator),
                                                         resourceManager(*info.asset) {}
 
+void SceneRenderer::pushConstant(VkCommandBuffer command)
+{
+  vkCmdPushConstants(
+      command,
+      pipeline_layout_h,
+      VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+      0,
+      sizeof(PushConstant),
+      &resourceManager.pushConstant_
+  );
+}
+
 void SceneRenderer::createPipeline(std::vector<VkDescriptorSetLayout> *layout_h)
 {
   fragShader = std::make_unique<ShaderModule>(device_h);

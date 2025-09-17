@@ -73,9 +73,9 @@ void UIRenderer::setupStyle()
   ImGui::StyleColorsDark(); // 다크 테마 기반
   ImGuiStyle &style         = ImGui::GetStyle();
   ImVec4 *colors            = style.Colors;
-  colors[ImGuiCol_WindowBg] = ImVec4(0.02f, 0.02f, 0.02f, 1.0f);
-  colors[ImGuiCol_ChildBg]  = ImVec4(0.02f, 0.02f, 0.02f, 1.0f);
-  colors[ImGuiCol_PopupBg]  = ImVec4(0.02f, 0.02f, 0.02f, 1.0f);
+  colors[ImGuiCol_WindowBg] = ImVec4(0.010f, 0.010f, 0.010f, 1.0f);
+  colors[ImGuiCol_ChildBg]  = ImVec4(0.010f, 0.010f, 0.010f, 1.0f);
+  colors[ImGuiCol_PopupBg]  = ImVec4(0.010f, 0.010f, 0.010f, 1.0f);
 
   colors[ImGuiCol_TitleBg]          = ImVec4(0.03f, 0.03f, 0.03f, 1.0f);
   colors[ImGuiCol_TitleBgActive]    = ImVec4(0.03f, 0.03f, 0.03f, 1.0f);
@@ -124,12 +124,13 @@ void UIRenderer::setupStyle()
   style.GrabMinSize      = 14.0f;
 }
 
-void UIRenderer:: uploadBackgroundImage(VkCommandBuffer command, std::string path)
+void UIRenderer:: uploadBackgroundImage()
 {
-  resourceManager_->loadTexture(command , path);
-  VulkanTexture* texture = resourceManager_->getTexture(path);
-  if (texture== nullptr)
+  backgroundTexture_ = resourceManager_  ->getTexture(std::string("VkVideo.png"));
+  if (backgroundTexture_ == nullptr)
   {
-    spdlog::info("fail to upload Texture");
+    throw std::runtime_error("failed to load background image");
   }
+  backgroundDescriptor_ = ImGui_ImplVulkan_AddTexture(backgroundTexture_->getSampler() , backgroundTexture_ ->textureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
+
 }

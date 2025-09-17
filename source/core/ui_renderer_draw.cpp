@@ -39,16 +39,12 @@ void UIRenderer::drawcall(VkCommandBuffer command)
   drawStateWindow(smallSize);
   drawMouseState(smallSize);
   drawToolBox(smallSize);
+  drawToolBoxUnder(smallSize);
 }
 
 void UIRenderer::drawTransition(VkCommandBuffer command)
 {
-  //ImGui::GetIO().DisplaySize.x
-  ////
-  ///if (ImGui::ImageButton((ImTextureID)(intptr_t)my_texture, ImVec2(64, 64))) {
-  // 클릭 처리
-  // }
-  ImVec2 size = ImVec2(backgroundTexture_->width, backgroundTexture_->height);
+  ImVec2 size = ImVec2(backgroundTexture_->width / 10, backgroundTexture_->height / 10);
   ImGui::Begin("Image Example");
   ImGui::Image((ImTextureID) (intptr_t) backgroundDescriptor_, size, ImVec2(0, 0), ImVec2(1, 1));
   ImGui::End();
@@ -124,14 +120,34 @@ void UIRenderer::drawToolBox(ImVec2 size)
         {
           printf("Color changed: R=%.2f G=%.2f B=%.2f A=%.2f\n", color[0], color[1], color[2], color[3]);
         }
-
-        ImGui::EndChild();
       }
+      ImGui::EndChild();
     }
+
     ImGui::End();
   }
 }
 
+
+void UIRenderer::drawToolBoxUnder(ImVec2 size)
+{
+  ImVec2 dispSize = ImGui::GetIO().DisplaySize;
+  ImGui::SetNextWindowPos(ImVec2(0, (dispSize.y / 6)*5), ImGuiCond_Always);
+  ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+  ImGui::SetNextWindowSize(ImVec2(dispSize.x - 300, (dispSize.y / 6)), ImGuiCond_Once);
+  if (ImGui::Begin("texture", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+  {
+    // drawFramebufferState();
+    // drawVertexState(size);
+    // drawIndexState(size);
+    // drawLightState(size);
+    // drawTextureState(size);
+    // drawCameraState(size);
+    // drawMaterialState(size);
+    // drawShaderState(size);
+  }
+  ImGui::End();
+}
 void UIRenderer::colorPickerColor()
 {
   ImGui::Begin("Color Picker");

@@ -40,7 +40,7 @@ void SceneRenderer::draw(VkCommandBuffer command)
       viewport.x = (i % 2) * halfWidth;
       viewport.y = (i / 2) * halfHeight;
       vkCmdSetViewport(command, 0, 1, &viewport);
-
+      pushConstant(command);
       scissor.offset = {static_cast<int32_t>(viewport.x), static_cast<int32_t>(viewport.y)};
       scissor.extent = {static_cast<uint32_t>(viewport.width), static_cast<uint32_t>(viewport.height)};
       vkCmdSetScissor(command, 0, 1, &scissor);
@@ -52,6 +52,7 @@ void SceneRenderer::draw(VkCommandBuffer command)
     }
   } else
   {
+    pushConstant(command);
     camera->camUpdate();
     viewport.x        = 0.0f;
     viewport.y        = 0.0f;
@@ -71,27 +72,4 @@ void SceneRenderer::draw(VkCommandBuffer command)
       mesh.second->draw(command);
     }
   }
-}
-
-void SceneRenderer::pushConstant(VkCommandBuffer command, Material material)
-{
-  VkPushConstantRange pushConstantRange{};
-  pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-  pushConstantRange.offset     = 0;
-  // pushConstantRange.size       = sizeof(MaterialType);
-  //setting materal for rendereing material constant setting
-
-  // MaterialType materialData = {};
-  // materialData.albedo = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-  // materialData.params = glm::vec4(0.5f, 0.3f, 1.0f, 0.0f);  // metallic, roughness, ao, padding
-  // materialData.flags = (1 << 0); // 예: useAlbedoMap 플래그
-
-  // vkCmdPushConstants(
-  // command,
-  // layout,
-  // VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-  // 0,
-  // sizeof(MaterialType),
-  // &materialData
-  //);
 }

@@ -11,6 +11,7 @@
 
 class Mesh{
   friend class ResourceManager;
+  friend class UIRenderer;
 public:
   Mesh(const std::vector<VertexAll> &vertices,
        const std::vector<uint32_t> &indices,

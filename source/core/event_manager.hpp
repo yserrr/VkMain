@@ -35,6 +35,17 @@ private:
   GLFWwindow *window_;
   SwapchainManager *swapchain_;
   SceneRenderer *renderer_;
+  bool altPressed= false ;
+  bool leftButton = false;
+  bool middleButton = false;
+  bool rightButton = false;
+
+
+  float yaw   = -90.0f;
+  float pitch = 0.0f;
+  float distance = 5.0f;
+
+
   bool moved = false;
   double wheelDelta_    = 0;
   bool muliiViews       = false;

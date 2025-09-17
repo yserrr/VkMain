@@ -1,5 +1,5 @@
 #version 450
-
+#extension GL_EXT_nonuniform_qualifier: require
 //| Descriptor Set | Binding Slot  |
 //| -------------- | ------------- | ------------------------------------------------
 //| `set = 0`      | `binding = 0` | Camera / Global Uniform
@@ -21,14 +21,21 @@ layout (location = 0) out vec4 outColor;
 layout (set = 1, binding = 0) uniform sampler2D bindlessTexture[];
 layout (set = 1, binding = 1) uniform sampler2D albedo;
 layout (set = 1, binding = 2) uniform sampler2D normal;
-layout (set = 1,  binding = 3) uniform sampler2D roughness;
+layout (set = 1, binding = 3) uniform sampler2D roughness;
+
 layout (std140, set = 0, binding = 1) uniform LightBuffer {
   GPULight lights[16];
   int lightCount;
 };
 
+layout (push_constant) uniform PushConstants {
+  mat4 model;
+  vec4 color;
+  uint bindlessIndex;
+} pc;
+
 void main() {
-  vec4 texColor = texture(bindlessTexture[0], fragTexCoord);
+  vec4 texColor = texture(bindlessTexture[pc.bindlessIndex], fragTexCoord);
   float eps = 1e-5;
   if (all(lessThan(abs(texColor), vec4(eps)))) {
     texColor += vec4(1.0);
@@ -36,7 +43,7 @@ void main() {
   vec3 fragPos = vec3(fragTexCoord, 0.0); // 임시 위치
   vec3 lightDir;
   float intensity;
-  vec3 normal = vec3(0.0, 0.0, 1.0);     // 임시 노멀
+  vec3 normal = vec3(0.0, 0.0, 1.0); // 임시 노멀
 
   GPULight light = lights[0];
   vec3 lightPos = vec3(light.position);

@@ -60,7 +60,9 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
 
     if (glfwGetKey(window_, GLFW_KEY_F) == GLFW_PRESS)
     {
-      mainCam->directionReverse();
+      mainCam->setPosition(glm::vec3(0.0f, 0.0f, 30.0f));
+      mainCam->setDirection(glm::vec3(0.0f, 0.0f, -1.0f));
+      mainCam->camUpdate();
     }
     if (key == GLFW_KEY_SPACE)
     {

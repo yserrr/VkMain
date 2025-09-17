@@ -11,6 +11,7 @@
 #include "buffer_builder.hpp"
 #include <unordered_map>
 #include "descriptor_uploader.hpp"
+#include "push_constant.hpp"
 
 using Key = std::string;
 
@@ -58,7 +59,7 @@ private:
   std::unique_ptr<SamplerBuilder> samplerBuilder_;
   std::shared_ptr<VulkanTexture> nomal;
   std::unique_ptr<LightManager> lightManager;
-
+  PushConstant pushConstant_{};
   std::unique_ptr<Camera> camera;
 };
 

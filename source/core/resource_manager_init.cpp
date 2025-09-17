@@ -51,5 +51,5 @@ void ResourceManager::loadTexture(VkCommandBuffer command, std::string path)
   auto texture            = std::make_unique<VulkanTexture>(textureInfo);
   texture->copyBufferToImage(command);
   texture->uploadDescriptor(bindlessDescirptor_, 0);
-  textures_[texturePath] = std::move(texture);
+  textures_[path] = std::move(texture);
 }

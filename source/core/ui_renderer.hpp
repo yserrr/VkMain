@@ -27,6 +27,9 @@ struct UIRendererCreateInfo{
 enum class CallType{
   Mesh,
   Texture,
+  UPLOAD,
+  UPDATE,
+  FREE,
 };
 
 struct UICall{
@@ -48,6 +51,7 @@ public:
   void drawTransition(VkCommandBuffer command);
   void drawStateWindow(ImVec2 size);
   void drawToolBox(ImVec2 size);
+  void drawToolBoxUnder(ImVec2 size);
   void drawVertexState(ImVec2 size);
   void drawIndexState(ImVec2 size);
   void drawLightState(ImVec2 size);
@@ -69,7 +73,7 @@ private:
   void colorPickerColor();
   void createPool();
   void setupStyle();
-  void uploadBackgroundImage(VkCommandBuffer command, std::string path);
+  void uploadBackgroundImage();
 
   bool smallUi_ = true; // 작은 창 유지 토글
   float color[4];

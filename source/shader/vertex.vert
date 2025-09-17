@@ -22,6 +22,12 @@ layout(set = 0, binding = 0 ) uniform cameraUBD{
     mat4 proj;
 } camera;
 
+layout(push_constant) uniform PushConstants {
+    mat4 model;
+    vec4 color;
+    uint bindlessIndex;
+} pc;
+
 void main() {
     // 월드 → 뷰 → 투영 변환을 거쳐 gl_Position에 할당
     gl_Position = camera.proj* camera.view*vec4(inPosition, 1.0);

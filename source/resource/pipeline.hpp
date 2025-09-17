@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <vector>
 #include "vertex.hpp"
+#include "push_constant.hpp"
 //api: 규격 , 명세서 
 #ifndef GRAPHICSPIPELINE_HPP
 #define GRAPHICSPIPELINE_HPP 
@@ -142,16 +143,24 @@ public:
     dynamicStateInfo.dynamicStateCount = dynamicStates.size() ;
     dynamicStateInfo.pDynamicStates    = dynamicStates.data();
 
-    //descriptorPool Manager 에서 관리
+
+    VkPushConstantRange pushConstantRange{};
+    pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
+    pushConstantRange.offset     = 0;  // 시작 위치
+    pushConstantRange.size       = sizeof(PushConstant);
+
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = info.descriptorSetLayouts->size();
     pipelineLayoutInfo.pSetLayouts    = info.descriptorSetLayouts->data();
+    pipelineLayoutInfo.pushConstantRangeCount = 1;
+    pipelineLayoutInfo.pPushConstantRanges= &pushConstantRange;
+
     if (vkCreatePipelineLayout(info.device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
     {
       throw std::runtime_error("failed to create pipeline layout!");
     }
-// 9. 파이프라인 생성
+
     VkGraphicsPipelineCreateInfo pipelineInfo{};
     pipelineInfo.sType               = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount          = 2;
