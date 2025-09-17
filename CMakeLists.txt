@@ -10,6 +10,16 @@ else ()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0")
 endif ()
 
+
+include(FetchContent)
+
+# assimp 자동 가져오기
+FetchContent_Declare(
+    assimp
+    GIT_REPOSITORY https://github.com/assimp/assimp.git
+    GIT_TAG v5.2.5  # 안정 버전 지정
+)
+FetchContent_MakeAvailable(assimp)
 # 디렉토리 설정
 set(SOURCE_DIR ${CMAKE_SOURCE_DIR}/source)
 set(EXTERN_DIR ${CMAKE_SOURCE_DIR}/extern)
