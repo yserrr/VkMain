@@ -15,13 +15,27 @@ include(FetchContent)
 
 # assimp 자동 가져오기
 FetchContent_Declare(
-    assimp
-    GIT_REPOSITORY https://github.com/assimp/assimp.git
-    GIT_TAG v5.2.5  # 안정 버전 지정
+        assimp
+        GIT_REPOSITORY https://github.com/assimp/assimp.git
+        GIT_TAG v5.2.5  #
 )
+
+FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY https://github.com/glfw/glfw.git
+    GIT_TAG 3.3.8
+)
+FetchContent_Declare(
+    glfw
+    GIT_REPOSITORY https://github.com/gabime/spdlog.git
+    GIT_TAG v1.12.0
+)
+FetchContent_MakeAvailable(glfw)
 FetchContent_MakeAvailable(assimp)
 # 디렉토리 설정
 set(SOURCE_DIR ${CMAKE_SOURCE_DIR}/source)
+set(EXTERN_DIR ${CMAKE_SOURCE_DIR}/extern)
+set(GLM_DIR ${CMAKE_SOURCE_DIR}/extern/glm)
 set(EXTERN_DIR ${CMAKE_SOURCE_DIR}/extern)
 set(MODEL_DIR ${EXTERN_DIR}/externModel/assets/models/)
 set(TEXTURE_DIR ${EXTERN_DIR}/externModel/assets/textures)
