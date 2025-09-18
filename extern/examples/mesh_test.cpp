@@ -25,9 +25,6 @@ int main()
   VulkanDevice device(info);
   const VkContext& context = device.getContext();
 
-  VkPhysicalDeviceProperties physicalDeviceProperties;
-  vkGetPhysicalDeviceProperties(context.physical_device_h, &physicalDeviceProperties);
-  auto minUboAlign = physicalDeviceProperties.limits.minUniformBufferOffsetAlignment;
   MemoryAllocator allocator(context.physical_device_h, context.device_h);
   SwapchainCreateInfo swapchainInfo(allocator);
   swapchainInfo.device_h         = context.device_h;
@@ -57,7 +54,7 @@ int main()
   commandManagerInfo.device_h    = device_h;
   commandManagerInfo.commandPool = commandPool.get();
   commandManagerInfo.frameCount  = swapchain.getImageCount();
-  CommandBufferManager commandBufferManager(commandManagerInfo);
+  CommandPoolManager commandBufferManager(commandManagerInfo);
   spdlog::info("create command buffers");
   RenderPassCreateInfo render_pass_create_info;
   render_pass_create_info.device      = device_h;

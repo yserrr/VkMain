@@ -73,13 +73,13 @@ void UIRenderer::setupStyle()
   ImGui::StyleColorsDark(); // 다크 테마 기반
   ImGuiStyle &style         = ImGui::GetStyle();
   ImVec4 *colors            = style.Colors;
-  colors[ImGuiCol_WindowBg] = ImVec4(0.12f, 0.12f, 0.14f, 1.0f);
-  colors[ImGuiCol_ChildBg]  = ImVec4(0.10f, 0.10f, 0.12f, 1.0f);
-  colors[ImGuiCol_PopupBg]  = ImVec4(0.10f, 0.10f, 0.12f, 1.0f);
+  colors[ImGuiCol_WindowBg] = ImVec4(0.010f, 0.010f, 0.010f, 1.0f);
+  colors[ImGuiCol_ChildBg]  = ImVec4(0.010f, 0.010f, 0.010f, 1.0f);
+  colors[ImGuiCol_PopupBg]  = ImVec4(0.010f, 0.010f, 0.010f, 1.0f);
 
-  colors[ImGuiCol_TitleBg]          = ImVec4(0.09f, 0.09f, 0.11f, 1.0f);
-  colors[ImGuiCol_TitleBgActive]    = ImVec4(0.14f, 0.14f, 0.17f, 1.0f);
-  colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.05f, 0.05f, 0.06f, 0.90f);
+  colors[ImGuiCol_TitleBg]          = ImVec4(0.03f, 0.03f, 0.03f, 1.0f);
+  colors[ImGuiCol_TitleBgActive]    = ImVec4(0.03f, 0.03f, 0.03f, 1.0f);
+  colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.03f, 0.03f, 0.03f, 1.0f);
 
   colors[ImGuiCol_Button]        = ImVec4(0.20f, 0.45f, 0.85f, 1.0f);
   colors[ImGuiCol_ButtonHovered] = ImVec4(0.25f, 0.55f, 0.95f, 1.0f);
@@ -122,4 +122,15 @@ void UIRenderer::setupStyle()
   style.ItemInnerSpacing = ImVec2(6, 6);
   style.ScrollbarSize    = 14.0f;
   style.GrabMinSize      = 14.0f;
+}
+
+void UIRenderer:: uploadBackgroundImage()
+{
+  backgroundTexture_ = resourceManager_  ->getTexture(std::string("VkVideo.png"));
+  if (backgroundTexture_ == nullptr)
+  {
+    throw std::runtime_error("failed to load background image");
+  }
+  backgroundDescriptor_ = ImGui_ImplVulkan_AddTexture(backgroundTexture_->getSampler() , backgroundTexture_ ->textureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
+
 }

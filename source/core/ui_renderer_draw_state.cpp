@@ -212,7 +212,7 @@ void UIRenderer::drawFramebufferState()
 {
   {
     const ImGuiViewport *vp = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(ImVec2(vp->Size.x - 200, vp->Pos.y + 10));
+    ImGui::SetNextWindowPos(ImVec2(10, vp->Pos.y+ vp->Size.y-100));
     ImGui::SetNextWindowBgAlpha(0.35f);
     if (ImGui::Begin("Overlay",
                      nullptr,
@@ -228,4 +228,57 @@ void UIRenderer::drawFramebufferState()
     }
     ImGui::End();
   }
+}
+
+//void UIRenderer::drawFrame(ImVec2 size)
+//{
+//  int numWindows = 6; // 몇 개의 UI 창을 반복할지
+//  float spacingX = size.x ; // 창 사이 가로 간격
+//
+//  for (int i = 1; i < numWindows; i++)
+//  {
+//    // 창 위치: 오른쪽으로 간격만큼 이동
+//    ImGui::SetNextWindowPos(ImVec2(spacingX * i, 0), ImGuiCond_Always);
+//    ImGui::SetNextWindowSize(size, ImGuiCond_Always);
+//    ImGui::SetNextWindowCollapsed(false, ImGuiCond_Always);
+//
+//    std::string windowName = "Frame " + std::to_string(i);
+//    if (ImGui::Begin(windowName.c_str(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
+//    {
+//      // 스크롤 영역
+//      ImGui::BeginChild(("ScrollRegion" + std::to_string(i)).c_str(),
+//                        ImVec2(0, 300), true, ImGuiWindowFlags_HorizontalScrollbar);
+//
+//      ImGui::Text("UI Content for window %d", i);
+//      ImGui::Separator();
+//
+//      // 예시: 칸 2개로 나누기
+//      ImGui::Columns(2, nullptr, false);
+//      for (int j = 0; j < 4; j++)
+//      {
+//        ImGui::Text("Item %d.%d", i, j);
+//        ImGui::NextColumn();
+//      }
+//      ImGui::Columns(1); // 칸 초기화
+//
+//      ImGui::EndChild();
+//    }
+//    ImGui::End();
+//  }
+//}
+void UIRenderer::inputText()
+{
+  // 한 줄 입력
+  static char name[64] = "";
+  ImGui::InputText("Name", name, IM_ARRAYSIZE(name));
+
+  // 힌트가 있는 입력
+  static char search[64] = "";
+  ImGui::InputTextWithHint("Search", "Type here...", search, IM_ARRAYSIZE(search));
+
+  // 여러 줄 입력
+  static char text[1024] = "";
+  ImGui::InputTextMultiline("Text", text, IM_ARRAYSIZE(text),
+                            ImVec2(-FLT_MIN, ImGui::GetTextLineHeight() * 16));
+
 }

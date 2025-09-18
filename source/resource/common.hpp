@@ -22,7 +22,7 @@
 #include<spdlog/spdlog.h>
 #include<glm/glm.hpp>
 //commmon
-#include<memoryAllocator.hpp>
+#include<memory_allocator.hpp>
 
 #define VK_NULL_HANDLE nullptr
 #define VK_VALID(handle) ((handle)!= VK_NULL_HANDLE)
@@ -33,6 +33,5 @@ if (err != VK_SUCCESS) {                                          \
 throw std::runtime_error("VkResult failed: " #x);             \
 }                                                                 \
 } while (0)
-
 
 #endif //COMMON_HPP

@@ -1,33 +1,11 @@
 #include<renderer.hpp>
 
-void SysRenderer::createPipeline(std::vector<VkDescriptorSetLayout> *layout_h)
+void SceneRenderer::setUp(VkCommandBuffer command)
 {
-  fragShader           = std::make_unique<ShaderModule>(device_h);
-  vertShader           = std::make_unique<ShaderModule>(device_h);
-  std::string fragPath = "/home/ljh/CLionProjects/VkMain/source/shader/fragment.frag";
-  std::string vertPath = "/home/ljh/CLionProjects/VkMain/source/shader/vertex.vert";
-  fragShader->setShader(fragPath, shaderc_fragment_shader);
-  vertShader->setShader(vertPath, shaderc_vertex_shader);
-
-  pipelineCreateInfo info;
-  info.device               = device_h;
-  info.extent               = swapchain->getExtent();
-  info.renderPass           = renderpass_h;
-  info.vertShaderModule     = vertShader->get();
-  info.fragShaderModule     = fragShader->get();
-  info.descriptorSetLayouts = layout_h;
-  pipeline                  = std::make_unique<GraphicsPipeline>(info);
-  pipeline_layout_h         = pipeline->getLayout();
-  pipeline_h                = pipeline->get();
-  spdlog::info("create pipeline");
-}
-
-void SysRenderer::setUp(VkCommandBuffer command)
-{
-  spdlog::info("draw call");                                               //push semaphore
   vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_h); // 파이프라인 바인딩
+  vkCmdSetPolygonModeEXT(command, polygonMode);
+  vkCmdSetDepthTestEnable(command, depthTest);
   camera->camUpdate();
-  VkViewport viewport{};
   viewport.x        = 0.0f;
   viewport.y        = 0.0f;
   viewport.width    = (float) swapchain->getExtent().width;
@@ -35,58 +13,63 @@ void SysRenderer::setUp(VkCommandBuffer command)
   viewport.minDepth = 0.0f;
   viewport.maxDepth = 1.0f;
   vkCmdSetViewport(command, 0, 1, &viewport);
-  VkRect2D scissor{};
   scissor.offset = {0, 0};
   scissor.extent = swapchain->getExtent();
   vkCmdSetScissor(command, 0, 1, &scissor);
-  asset.mesh->bind(command);
-  asset.mesh->draw(command);
 }
 
-// 프레임 이전 작업 완료 대기 (CPU와 GPU 간 동기화)
-//push semaphore
-//  record start
-//  모든 set들을 binding 해줘야함
-void SysRenderer::draw(VkCommandBuffer command)
+void SceneRenderer::draw(VkCommandBuffer command)
 {
   vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_h); // 파이프라인 바인딩
-  camera->camUpdate();
-  VkViewport viewport{};
-  viewport.x        = 0.0f;
-  viewport.y        = 0.0f;
-  viewport.width    = (float) swapchain->getExtent().width;
-  viewport.height   = (float) swapchain->getExtent().height;
-  viewport.minDepth = 0.0f;
-  viewport.maxDepth = 1.0f;
-  vkCmdSetViewport(command, 0, 1, &viewport);
-  VkRect2D scissor{};
-  scissor.offset = {0, 0};
-  scissor.extent = swapchain->getExtent();
-  vkCmdSetScissor(command, 0, 1, &scissor);
-// must descriptor binding 이후 draw해야만 함 안그러면 터짐
-  asset.mesh->bind(command);
-  asset.mesh->draw(command);
-}
+  vkCmdSetPolygonModeEXT(command, polygonMode);
+  vkCmdSetDepthTestEnable(command, depthTest);
+  if (viewMode == ViewMode::MultiView)
+  {
+    // swapchain 크기 가져오기
+    auto extent      = swapchain->getExtent();
+    float halfWidth  = extent.width / 2.0f;
+    float halfHeight = extent.height / 2.0f;
+    for (uint32_t i = 0; i < 4; i++)
+    {
+      // viewport 설정
+      viewport.width    = halfWidth;
+      viewport.height   = halfHeight;
+      viewport.minDepth = 0.0f;
+      viewport.maxDepth = 1.0f;
 
-void SysRenderer::pushConstant(VkCommandBuffer command, Material material)
-{
-  VkPushConstantRange pushConstantRange{};
-  pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-  pushConstantRange.offset     = 0;
-  pushConstantRange.size       = sizeof(MaterialType);
-  //setting materal for rendereing material constant setting
+      viewport.x = (i % 2) * halfWidth;
+      viewport.y = (i / 2) * halfHeight;
+      vkCmdSetViewport(command, 0, 1, &viewport);
+      pushConstant(command);
+      scissor.offset = {static_cast<int32_t>(viewport.x), static_cast<int32_t>(viewport.y)};
+      scissor.extent = {static_cast<uint32_t>(viewport.width), static_cast<uint32_t>(viewport.height)};
+      vkCmdSetScissor(command, 0, 1, &scissor);
+      for (auto &mesh: resourceManager.meshes_)
+      {
+        mesh.second->bind(command);
+        mesh.second->draw(command);
+      }
+    }
+  } else
+  {
+    pushConstant(command);
+    camera->camUpdate();
+    viewport.x        = 0.0f;
+    viewport.y        = 0.0f;
+    viewport.width    = (float) swapchain->getExtent().width;
+    viewport.height   = (float) swapchain->getExtent().height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(command, 0, 1, &viewport);
 
-  // MaterialType materialData = {};
-  // materialData.albedo = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
-  // materialData.params = glm::vec4(0.5f, 0.3f, 1.0f, 0.0f);  // metallic, roughness, ao, padding
-  // materialData.flags = (1 << 0); // 예: useAlbedoMap 플래그
+    scissor.offset = {0, 0};
+    scissor.extent = swapchain->getExtent();
+    vkCmdSetScissor(command, 0, 1, &scissor);
 
-  // vkCmdPushConstants(
-  // command,
-  // layout,
-  // VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-  // 0,
-  // sizeof(MaterialType),
-  // &materialData
-  //);
+    for (auto &mesh: resourceManager.meshes_)
+    {
+      mesh.second->bind(command);
+      mesh.second->draw(command);
+    }
+  }
 }

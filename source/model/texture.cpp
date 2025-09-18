@@ -1,6 +1,6 @@
 #include <texture.hpp>
 
-Texture::Texture(textureCreateInfo info)
+VulkanTexture::VulkanTexture(textureCreateInfo info)
   : device(info.device),
     textureSampler(info.sampler),
     allocator(*info.allocator)
@@ -8,13 +8,13 @@ Texture::Texture(textureCreateInfo info)
   loadImage(info.filename);
 }
 
-Texture::~Texture()
+VulkanTexture::~VulkanTexture()
 {
   vkDestroyImageView(device, textureImageView, nullptr);
   vkDestroyImage(device, textureImage, nullptr);
 }
 
-void Texture::loadImage(const char *filename)
+void VulkanTexture::loadImage(const char *filename)
 {
   int32_t texWidth, texHeight, texChannels;
   stbi_uc *pixels = stbi_load(filename, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
@@ -24,14 +24,14 @@ void Texture::loadImage(const char *filename)
   height                 = texHeight;
   createImage();
   createImageView();
-  buffer = std::make_unique<Buffer>(allocator, imageSize, BufferType::Stage);
+  buffer = std::make_unique<StaticBuffer>(allocator, imageSize, BufferType::STAGE);
   buffer->getStagingBuffer(pixels);
   spdlog::info("create staging buffer for texture");
   stbi_image_free(pixels);
 }
 
 //자기 정보를 descriptor hander를 받아서 update
-void Texture::uploadDescriptor(VkDescriptorSet set)
+void VulkanTexture::uploadDescriptor(VkDescriptorSet set, uint32_t arrayIndex)
 {
   if (textureSampler == VK_NULL_HANDLE)
   {
@@ -39,14 +39,14 @@ void Texture::uploadDescriptor(VkDescriptorSet set)
   }
   VkDescriptorImageInfo imageInfo{};
   imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-  imageInfo.imageView   = textureImageView; // VkImageView
-  imageInfo.sampler     = textureSampler;   // VkSampler
+  imageInfo.imageView   = textureImageView;
+  imageInfo.sampler     = textureSampler;
 
   VkWriteDescriptorSet descriptorWrite{};
   descriptorWrite.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
   descriptorWrite.dstSet          = set;
-  descriptorWrite.dstBinding      = 1; // bindingIndex; // shader에서의 binding 번호
-  descriptorWrite.dstArrayElement = 0;
+  descriptorWrite.dstBinding      = 0;
+  descriptorWrite.dstArrayElement = arrayIndex;
   descriptorWrite.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
   descriptorWrite.descriptorCount = 1;
   descriptorWrite.pImageInfo      = &imageInfo;
@@ -54,7 +54,7 @@ void Texture::uploadDescriptor(VkDescriptorSet set)
 }
 
 //upload 방법을 통해서 호출
-void Texture::createImage()
+void VulkanTexture::createImage()
 {
   VkImageCreateInfo imageInfo{};
   imageInfo.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -82,7 +82,7 @@ void Texture::createImage()
   vkBindImageMemory(device, textureImage, textureMemory.memory, textureMemory.offset);
 }
 
-void Texture::createImageView()
+void VulkanTexture::createImageView()
 {
   VkImageViewCreateInfo viewInfo{};
   viewInfo.sType                           = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -104,7 +104,7 @@ void Texture::createImageView()
   }
 }
 
-void Texture::copyBufferToImage(VkCommandBuffer command)
+void VulkanTexture::copyBufferToImage(VkCommandBuffer command)
 {
 // 1. stagingBuffer와 deviceLocalImage(VkImage) 생성 (생략)
 // 2. 커맨드 버퍼 기록
@@ -124,17 +124,17 @@ void Texture::copyBufferToImage(VkCommandBuffer command)
   barrier.srcAccessMask                   = 0;
   barrier.dstAccessMask                   = VK_ACCESS_TRANSFER_WRITE_BIT;
   vkCmdPipelineBarrier(
-      command,
-      VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
-      VK_PIPELINE_STAGE_TRANSFER_BIT,
-      0,
-      0,
-      nullptr,
-      0,
-      nullptr,
-      1,
-      &barrier
-    );
+                       command,
+                       VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                       VK_PIPELINE_STAGE_TRANSFER_BIT,
+                       0,
+                       0,
+                       nullptr,
+                       0,
+                       nullptr,
+                       1,
+                       &barrier
+                      );
 // 4. 버퍼에서 이미지로 복사
   VkBufferImageCopy region{};
   region.bufferOffset                    = 0;
@@ -148,28 +148,28 @@ void Texture::copyBufferToImage(VkCommandBuffer command)
   region.imageExtent                     = {width, height, 1};
   spdlog::info("call to command buffer to trenslate to texture");
   vkCmdCopyBufferToImage(
-      command,
-      buffer->getStagingBuffer(),
-      textureImage,
-      VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-      1,
-      &region
-    );
+                         command,
+                         buffer->getStagingBuffer(),
+                         textureImage,
+                         VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+                         1,
+                         &region
+                        );
 // 5. 이미지 레이아웃을 셰이더 읽기용으로 전환
   barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
   barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
   barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
   barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
   vkCmdPipelineBarrier(
-      command,
-      VK_PIPELINE_STAGE_TRANSFER_BIT,
-      VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-      0,
-      0,
-      nullptr,
-      0,
-      nullptr,
-      1,
-      &barrier
-    );
+                       command,
+                       VK_PIPELINE_STAGE_TRANSFER_BIT,
+                       VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+                       0,
+                       0,
+                       nullptr,
+                       0,
+                       nullptr,
+                       1,
+                       &barrier
+                      );
 }

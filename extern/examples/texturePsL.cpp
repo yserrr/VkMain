@@ -28,9 +28,9 @@ void SystemRenderer::pipelineSetup()
   VkDeviceSize camSize = camAlignment * camDesc.camMax;
 
   UboPool_ = std::make_unique<BufferPool>(*allocator_,
-                                        BufferType::UNIFORM,
-                                        camSize,
-                                        AccessPolicy::HostPreferred);
+                                          BufferType::UNIFORM,
+                                          camSize,
+                                          AccessPolicy::HostPreferred);
 
   for (int i = 0; i < renderContext.MAX_FRAMES_IN_FLIGHT; i++)
   {
@@ -39,11 +39,11 @@ void SystemRenderer::pipelineSetup()
     camBufHandle[i].descriptorSet = set;
     camBufHandle[i].bindingIndex  = 0;
     descriptorUploader_->UploadUboSet(
-      camBufHandle[i].buffer,
-      camBufHandle[i].allocation.size,
-      camBufHandle[i].descriptorSet,
-      camBufHandle[i].bindingIndex,
-      1);
+                                      camBufHandle[i].buffer,
+                                      camBufHandle[i].allocation.size,
+                                      camBufHandle[i].descriptorSet,
+                                      camBufHandle[i].bindingIndex,
+                                      1);
   }
 
   vertshader->setShader("/home/ljh/Desktop/MyProject-master/source/back/gpu_vk/render_ps/exp_shader/textureV.vert",
@@ -321,7 +321,7 @@ void SystemRenderer::transferStage()
                                        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
                                        VK_PIPELINE_STAGE_HOST_BIT,
                                        VK_PIPELINE_STAGE_TRANSFER_BIT
-    );
+                                      );
 
   streamingBuffer_->recordCopyToImage(singleCommand,
                                       imgBlock,
@@ -329,7 +329,7 @@ void SystemRenderer::transferStage()
                                       bufferCopyRegions.size(),
                                       texture.img,
                                       VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-    );
+                                     );
   streamingBuffer_->recordImageBarrier(singleCommand,
                                        texture.img,
                                        subresourceRange,
@@ -339,7 +339,7 @@ void SystemRenderer::transferStage()
                                        VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
                                        VK_PIPELINE_STAGE_TRANSFER_BIT,
                                        VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
-    );
+                                      );
 
   VkSamplerCreateInfo sampler{};
   sampler.sType            = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -416,11 +416,11 @@ void SystemRenderer::renderStage()
   VkSemaphore imageAvailable  = presentSyncManager_->getSingal(renderContext.currentFrame);
   VkSemaphore renderFinishied = renderSyncManager_->getSingal(renderContext.currentFrame);
   VkResult result             = vkAcquireNextImageKHR(device_h,
-                                                      swapchain_->getSwapchain(),
-                                                      100000,
-                                                      imageAvailable,
-                                                      VK_NULL_HANDLE,
-                                                      &renderContext.imageIndex);
+                                          swapchain_->getSwapchain(),
+                                          100000,
+                                          imageAvailable,
+                                          VK_NULL_HANDLE,
+                                          &renderContext.imageIndex);
 
   if (result == VK_ERROR_OUT_OF_DATE_KHR)
   {
@@ -452,7 +452,7 @@ void SystemRenderer::renderStage()
                                        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                        VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-    );
+                                      );
 
   VkImageSubresourceRange depthSubresourceRange = {};
   depthSubresourceRange.aspectMask              = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -471,7 +471,7 @@ void SystemRenderer::renderStage()
                                        VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
                                        VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT |
                                        VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT
-    );
+                                      );
 
   VkRenderingAttachmentInfo colorAttachment{};
   colorAttachment.sType            = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -577,7 +577,7 @@ void SystemRenderer::renderStage()
                                        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
                                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
                                        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT
-    );
+                                      );
 
   VkImageView attachments[] = {
   swapchain_->getSwapchainImageView(renderContext.imageIndex),
