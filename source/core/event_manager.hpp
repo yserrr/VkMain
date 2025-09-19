@@ -3,6 +3,8 @@
 #include<common.hpp>
 #include<camera.hpp>
 #include"renderer.hpp"
+#include "sculptor.hpp"
+#include "event_manager_mode.hpp"
 
 class SwapchainManager;
 
@@ -17,6 +19,7 @@ public:
   bool isMultiView();
   VkExtent2D getExtent();
   void getKey();
+  void getMouseEvent();
   void wheelUpdate();
   void setRenderer(SceneRenderer *renderer);
 
@@ -31,10 +34,13 @@ private:
   void getViewIndex(double w, double h);
 
 private:
-  Camera *mainCam;
-  GLFWwindow *window_;
+  CurrentActor actor_ = CurrentActor::Sculptor;
   SwapchainManager *swapchain_;
+  ResourceManager* resourcesManager_;
   SceneRenderer *renderer_;
+  GLFWwindow *window_;
+  Camera *mainCam;
+  Sculptor sculptor_;
   bool altPressed= false ;
   bool leftButton = false;
   bool middleButton = false;

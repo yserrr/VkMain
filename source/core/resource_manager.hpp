@@ -1,7 +1,7 @@
 #ifndef RESOURCE_MANAGER
 #define RESOURCE_MANAGER
 #include <texture.hpp>
-#include <mesh.hpp>
+#include <../sculptor/dyn_mesh.hpp>
 #include <light.hpp>
 #include <common.hpp>
 #include <../resource/descriptor_manager.hpp>
@@ -32,13 +32,15 @@ public:
   ~ResourceManager();
   void updateDescriptorSet(uint32_t currentFrame);
   void uploadDescriptors();
-  void loadMesh(VkCommandBuffer command, std::string path);
-  void loadTexture(VkCommandBuffer command, std::string path);
+  void uploadMesh(VkCommandBuffer command, std::string path);
+  void uploadTexture(VkCommandBuffer command, std::string path);
   void setTexture();
   VulkanTexture* getTexture(Key path);
   void setLight();
+  std::vector<VulkanTexture*> uploadedTexture;
   std::unique_ptr<DescriptorManager> descriptorManager;
   std::vector<std::shared_ptr<StaticBuffer> > camBuffers;
+  DynMesh* currentMesh = nullptr;
   Camera *getCamera();
 
   ImporterEx importer_;
@@ -51,11 +53,10 @@ private:
   VkPhysicalDeviceProperties physicalDeviceProperties;
   DescriptorUploader descriptorUploader_;
   VkBindlessDescriptor bindlessDescirptor_;
-  std::unordered_map<Key, std::unique_ptr<Mesh> > meshes_;
+  std::unordered_map<Key, std::unique_ptr<DynMesh> > meshes_;
   std::unordered_map<Key, std::unique_ptr<VulkanTexture> > textures_;
   std::shared_ptr<UBOBuilder> uboBuilder_;
   std::vector<BufferContext> mainCamBuffers_;
-
   std::unique_ptr<SamplerBuilder> samplerBuilder_;
   std::shared_ptr<VulkanTexture> nomal;
   std::unique_ptr<LightManager> lightManager;

@@ -4,6 +4,10 @@
 
 #include <ui_renderer.hpp>
 
+#include "imgui_internal.h"
+#include "../../cmake-build-debug/_deps/assimp-src/code/AssetLib/3MF/3MFXmlTags.h"
+#include "../../cmake-build-debug/_deps/assimp-src/contrib/Open3DGC/o3dgcCommon.h"
+
 void UIRenderer::rec(VkCommandBuffer command)
 {
   ImGui_ImplVulkan_NewFrame();
@@ -22,7 +26,7 @@ void UIRenderer::draw(VkCommandBuffer command)
   ImGui_ImplVulkan_NewFrame();
   ImGui_ImplGlfw_NewFrame();
   ImGui::NewFrame();
-  const ImVec2 smallSize = smallUi_ ? ImVec2(360, 200) : ImVec2(440, 220);
+  const ImVec2 smallSize = smallUi_ ? ImVec2(120, 80) : ImVec2(200, 120);
   drawFramebufferState();
   drawStateWindow(smallSize);
   drawMouseState(smallSize);
@@ -44,10 +48,10 @@ void UIRenderer::drawcall(VkCommandBuffer command)
 
 void UIRenderer::drawTransition(VkCommandBuffer command)
 {
-  ImVec2 size = ImVec2(backgroundTexture_->width / 10, backgroundTexture_->height / 10);
-  ImGui::Begin("Image Example");
-  ImGui::Image((ImTextureID) (intptr_t) backgroundDescriptor_, size, ImVec2(0, 0), ImVec2(1, 1));
-  ImGui::End();
+  ImDrawList *draw_list = ImGui::GetForegroundDrawList();
+  draw_list->AddImage((ImTextureID) (intptr_t) backgroundDescriptor_,
+                      ImVec2(60, 70),
+                      ImVec2(150, 150));
 }
 
 void UIRenderer::drawStateWindow(ImVec2 size)
@@ -56,7 +60,7 @@ void UIRenderer::drawStateWindow(ImVec2 size)
     ImVec2 dispSize = ImGui::GetIO().DisplaySize;
     ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
     ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
-    ImGui::SetNextWindowSize(ImVec2(dispSize.x - 300, (dispSize.y / 6)), ImGuiCond_Once);
+    ImGui::SetNextWindowSize(ImVec2(dispSize.x - dispSize.x / 6, (dispSize.y / 6)), ImGuiCond_Once);
     if (ImGui::Begin("box", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
     {
       // drawFramebufferState();
@@ -76,8 +80,8 @@ void UIRenderer::drawToolBox(ImVec2 size)
 {
   {
     ImVec2 dispSize = ImGui::GetIO().DisplaySize;
-    ImGui::SetNextWindowPos(ImVec2(dispSize.x - 300, 0), ImGuiCond_Always);
-    ImGui::SetNextWindowSize(ImVec2(300, dispSize.y), ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(dispSize.x - dispSize.x / 6, 0), ImGuiCond_Always);
+    ImGui::SetNextWindowSize(ImVec2(dispSize.x / 6, dispSize.y), ImGuiCond_Once);
     if (ImGui::Begin("Model Tool Box",
                      nullptr,
                      ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
@@ -112,11 +116,12 @@ void UIRenderer::drawToolBox(ImVec2 size)
         spdlog::info("mesh call {}", call.path);
         buf[0] = '\0';
       }
+
       ImGui::BeginChild("ScrollRegion", ImVec2(0, 300), true);
       {
         if (ImGui::ColorPicker4("Pick Color",
                                 color,
-                                ImGuiColorEditFlags_PickerHueBar))
+                                ImGuiColorEditFlags_NoPicker))
         {
           printf("Color changed: R=%.2f G=%.2f B=%.2f A=%.2f\n", color[0], color[1], color[2], color[3]);
         }
@@ -128,26 +133,33 @@ void UIRenderer::drawToolBox(ImVec2 size)
   }
 }
 
-
 void UIRenderer::drawToolBoxUnder(ImVec2 size)
 {
   ImVec2 dispSize = ImGui::GetIO().DisplaySize;
-  ImGui::SetNextWindowPos(ImVec2(0, (dispSize.y / 6)*5), ImGuiCond_Always);
+  ImGui::SetNextWindowPos(ImVec2(0, (dispSize.y / 6) * 5), ImGuiCond_Always);
   ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
-  ImGui::SetNextWindowSize(ImVec2(dispSize.x - 300, (dispSize.y / 6)), ImGuiCond_Once);
-  if (ImGui::Begin("texture", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove))
+  ImGui::SetNextWindowSize(ImVec2(dispSize.x - dispSize.x / 5, (dispSize.y / 6)), ImGuiCond_Always);
+  if (ImGui::Begin("system Log:",
+                   nullptr,
+                   ImGuiWindowFlags_NoResize |
+                   ImGuiWindowFlags_NoMove |
+                   ImGuiWindowFlags_NoScrollbar |
+                   ImGuiWindowFlags_NoCollapse))
   {
-    // drawFramebufferState();
-    // drawVertexState(size);
-    // drawIndexState(size);
-    // drawLightState(size);
-    // drawTextureState(size);
-    // drawCameraState(size);
-    // drawMaterialState(size);
-    // drawShaderState(size);
+    ImVec2 minPos(0, (dispSize.y / 6) * 5);
+    ImVec2 maxPos(dispSize.x - dispSize.x / 5, (dispSize.y / 6));
+    float lineSpacing = ImGui::GetTextLineHeightWithSpacing();
+    ImGui::SetNextWindowPos(ImVec2(10, (dispSize.y / 6) * 5));
+    ImGui::SetNextWindowSize(ImVec2(dispSize.x, dispSize.y - lineSpacing));
+    for (uint32_t i = 0; i < sink_->buffer_.size(); i++)
+    {
+      const std::string &line = sink_->buffer_[i];
+      ImGui::Text("%s", line.c_str());
+    }
   }
   ImGui::End();
 }
+
 void UIRenderer::colorPickerColor()
 {
   ImGui::Begin("Color Picker");

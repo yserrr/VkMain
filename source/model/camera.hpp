@@ -7,20 +7,20 @@
 #include <static_buffer.hpp>
 #include <common.hpp>
 #include <glm/gtc/quaternion.hpp>
+#include <camera_cfg.hpp>
 
-struct camCreateInfo{
+struct CamCI{
   float fov;
   float aspectRatio;
   float nearPlane;
   float farPlane;
-  MemoryAllocator *allocator;
 };
 
 class Camera{
   friend class ResourceManager;
-
+  friend class EventManager;
 public:
-  Camera(camCreateInfo info);
+  Camera(CamCI info);
   void camUpdate();
   void uploadDescriptor(VkDescriptorSet set);
   void setSpeed(float ds);
@@ -29,7 +29,6 @@ public:
   void setPosition(const glm::vec3 &pos);
   void setDirection(const glm::vec3 &dir);
   void setAspectRatio(float a);
-
   void moveForward();
   void moveBackward();
   void moveRight();
@@ -38,20 +37,20 @@ public:
   void addFov(float dt);
   void addQuaterian(float dYawDeg, float dPitDeg);
 
+  Ray generateRay(double posX, double posY);
 private:
+  VkExtent2D currentExtent;
   struct cameraUBO{
     glm::mat4 view;
     glm::mat4 proj;
   } ubo;
 
-  MemoryAllocator &allocator;
-  std::unique_ptr<StaticBuffer> buffer;
-  glm::vec3 position;
-  glm::vec3 direction_;
+  glm::vec3 position_;
+  glm::vec3 dir_;
   glm::vec3 right_;
-  glm::vec3 up;
+  glm::vec3 up_;
   VkDevice device;
-  float fov;
+  float fov_;
   float aspect;
   float nearPlane;
   float farPlane;

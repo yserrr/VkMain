@@ -1,10 +1,15 @@
 #define   STB_IMAGE_IMPLEMENTATION 
 #include <engine.hpp>
+#include <spdlog/spdlog.h>
 
 void Engine::run()
 {
+  UIsink = std::make_shared<UILogSink>();
+  spdlog::set_default_logger(std::make_shared<spdlog::logger>("default", UIsink));
+  spdlog::set_level(spdlog::level::trace);
   vkDeviceload();
   initialize();
+  uiRenderer->sink_  = UIsink;
   setUp();
   vkDeviceWaitIdle(device_h);
   uiRenderer ->uploadBackgroundImage();
@@ -12,9 +17,11 @@ void Engine::run()
   while (!glfwWindowShouldClose(window_h))
   {
     glfwPollEvents();
-    resource_manager_->updateDescriptorSet(currentFrame);
+    spdlog::info("Hello, world!");
+    resourceManager_->updateDescriptorSet(currentFrame);
     eventManager_->getKey();
     eventManager_->wheelUpdate();
+    eventManager_ ->getMouseEvent();
     eventManager_->moved = false;
     inFlightFences->wait(currentFrame);
     inFlightFences->reset(currentFrame);
@@ -25,15 +32,21 @@ void Engine::run()
     {
       UICall call = uiRenderer->callStack_.back();
       spdlog::info("call stack {}", call.path.c_str());
-      resource_manager_->loadMesh(command, call.path);
+      resourceManager_->uploadMesh(command, call.path);
       uiRenderer->callStack_.pop_back();
+    }
+    if (eventManager_->sculptor_.dirty_)
+    {
+      std::cout << "dirty"<<std::endl;
+      eventManager_->sculptor_.mesh_->dynMeshUpdate(command);
+      eventManager_->sculptor_.dirty_= false;
     }
     vkCmdBindDescriptorSets(command,
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
                             pipeline_layout_h,
                             1,
                             1,
-                            &resource_manager_->bindlessDescirptor_,
+                            &resourceManager_->bindlessDescirptor_,
 
                             0,
                             nullptr);
@@ -42,7 +55,7 @@ void Engine::run()
                             pipeline_layout_h,
                             0,
                             1,
-                            &resource_manager_->mainCamBuffers_[currentFrame].descriptorSet,
+                            &resourceManager_->mainCamBuffers_[currentFrame].descriptorSet,
                             0,
                             nullptr);
 
@@ -65,7 +78,7 @@ void Engine::run()
   renderFinishedSemaphores.reset();
   imageAvailableSemaphores.reset();
   sceneRenderer.reset();
-  resource_manager_.reset();
+  resourceManager_.reset();
   allocator.reset();
   eventManager_.reset();
   uiRenderer.reset();
@@ -84,15 +97,16 @@ void Engine::setUp()
   VkSemaphore semaphore   = imageAvailableSemaphores->get(currentFrame);
   imageIndex_             = swapchain->getImageIndex(semaphore);
   VkCommandBuffer command = rec(imageIndex_);
-  resource_manager_->loadMesh(command, "sphere.gltf");
-  resource_manager_->loadTexture(command, "VkVideo.png");
-  resource_manager_->updateDescriptorSet(currentFrame);
+  resourceManager_->uploadMesh(command, "sphere.gltf");
+  resourceManager_->uploadTexture(command, "VkVideo.png");
+  resourceManager_->updateDescriptorSet(currentFrame);
   vkCmdBeginRenderPass(command, &renderPassInfos[imageIndex_], VK_SUBPASS_CONTENTS_INLINE); // RenderPass 시작
   sceneRenderer->setUp(command);
   vkCmdNextSubpass(command, VK_SUBPASS_CONTENTS_INLINE);
   uiRenderer->draw(command);
   vkCmdEndRenderPass(command);
   summitQueue(command, imageIndex_);
+  eventManager_->sculptor_.mesh_= resourceManager_->currentMesh;
   currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 

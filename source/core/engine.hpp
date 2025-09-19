@@ -3,7 +3,7 @@
 
 #include  <common.hpp>
 #include  <importer.hpp>
-#include  <mesh.hpp>
+#include <../sculptor/dyn_mesh.hpp>
 #include  <renderer.hpp>
 #include  <ui_renderer.hpp>
 #include  <event_manager.hpp>
@@ -23,7 +23,7 @@ private:
   void draw();
   VkCommandBuffer rec(uint32_t imageIndex);
   void summitQueue(VkCommandBuffer command, uint32_t imageIndex);
-
+  std::shared_ptr<UILogSink> UIsink;
   GLFWwindow *window_h;
   VkInstance instance_h;
   VkSurfaceKHR surface_h;
@@ -54,7 +54,7 @@ private:
   std::unique_ptr<CommandPoolManager> commandBufferManager;
 
   std::unique_ptr<MemoryAllocator> allocator;
-  std::unique_ptr<ResourceManager> resource_manager_;
+  std::unique_ptr<ResourceManager> resourceManager_;
   std::unique_ptr<EventManager> eventManager_;
   std::unique_ptr<UIRenderer> uiRenderer;
   std::unique_ptr<SceneRenderer> sceneRenderer;

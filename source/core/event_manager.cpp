@@ -4,6 +4,7 @@
 EventManager::EventManager(GLFWwindow *window) :
   window_(window)
 {
+  glfwGetCursorPos(window_, &lastX,&lastY);
   glfwSetWindowUserPointer(window, this);
   glfwSetKeyCallback(window, keyCallbackWrapper);
   glfwSetCursorPosCallback(window, cursorPosCallbackWrapper);
@@ -22,6 +23,7 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
   {
     return;
   }
+
   if (action == GLFW_PRESS)
   {
     if (key == GLFW_KEY_1)
@@ -49,6 +51,13 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
     {
       mainCam->moveRight();
     }
+    if (key == GLFW_KEY_D || key == GLFW_KEY_LEFT_CONTROL)
+    {
+      if (actor_ == CurrentActor::Sculptor)
+      {
+        sculptor_.subdivideMesh();
+      }
+    }
     if (key == GLFW_KEY_A)
     {
       mainCam->moveLeft();
@@ -60,8 +69,10 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
 
     if (glfwGetKey(window_, GLFW_KEY_F) == GLFW_PRESS)
     {
+      glm::quat quat{};
       mainCam->setPosition(glm::vec3(0.0f, 0.0f, 30.0f));
       mainCam->setDirection(glm::vec3(0.0f, 0.0f, -1.0f));
+      mainCam->orientation_ = quat;
       mainCam->camUpdate();
     }
     if (key == GLFW_KEY_SPACE)
@@ -94,6 +105,10 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
 void EventManager::setCamera(Camera *cam)
 {
   mainCam = cam;
+  glfwGetCursorPos(window_, &lastX, &lastY);
+
+  mainCam->addQuaterian(lastX, lastY);
+  mainCam->currentExtent = currentExtent;
 }
 
 void EventManager::setSwapchain(SwapchainManager *swapchainP)
@@ -122,21 +137,24 @@ void EventManager::mouseButtonCallback(GLFWwindow *window, int button, int actio
     {
       leftMousePressed = true;
       glfwGetCursorPos(window, &lastX, &lastY);
-      //////todo:
-      /////  sculptor mmode setting and rendering method sort
-      //switch (curentState)
-      //{
-      //  case (CurrentManager::Sculptor):
-      //  {
-      //    Ray ray = mainCam->generateRay(lastX, lastY);
-      //    //sculptor-> stroke(lastX, last Y);
-      //    break;
-      //  }
-      //  default:
-      //  {
-      //    break;
-      //  }
-      //}
+      Ray ray = mainCam->generateRay(lastX, lastY);
+
+      switch (actor_)
+      {
+        case (CurrentActor::Sculptor):
+        {
+          //sculptor_.stroke(ray);
+          break;
+        }
+        case (CurrentActor::Editor):
+        {
+          break ;
+        }
+        default:
+        {
+          break;
+        }
+      }
     } else if (action == GLFW_RELEASE)
     {
       leftMousePressed = false;
@@ -146,10 +164,10 @@ void EventManager::mouseButtonCallback(GLFWwindow *window, int button, int actio
 
 void EventManager::cursorPosCallback(GLFWwindow *window, double xpos, double ypos)
 {
-  float deltaX       = static_cast<float>(xpos - lastX);
-  float deltaY       = static_cast<float>(ypos - lastY);
-  lastX              = xpos;
-  lastY              = ypos;
+  float deltaX = static_cast<float>(xpos - lastX);
+  float deltaY = static_cast<float>(ypos - lastY);
+  lastX        = xpos;
+  lastY        = ypos;
   if (!mouseMoveState) return;
   ImGuiIO &io = ImGui::GetIO();
   if (io.WantCaptureMouse | moved)
@@ -177,7 +195,6 @@ void EventManager::scrollCallback(GLFWwindow *window, double xoffset, double yof
 
 void EventManager::getViewIndex(double w, double h)
 {
-
   ImGuiIO &io = ImGui::GetIO();
   if (io.WantCaptureMouse)
   {
@@ -185,7 +202,7 @@ void EventManager::getViewIndex(double w, double h)
   }
   bool right = w >= (currentExtent.width / 2.0f);
   bool top   = h >= (currentExtent.height / 2.0f);
-  int  index = 0;
+  int index  = 0;
   if (!right && !top) index = 0;
   else if (right && !top) index = 1;
   else if (!right && top) index = 2;
@@ -235,7 +252,7 @@ void EventManager::keyCallbackWrapper(GLFWwindow *window, int key, int scancode,
 
 void EventManager::mouseButtonCallbackWrapper(GLFWwindow *window, int button, int action, int mods)
 {
-  ImGuiIO &io   = ImGui::GetIO();
+  ImGuiIO &io = ImGui::GetIO();
   if (io.WantCaptureMouse)
   {
     return;
@@ -267,7 +284,6 @@ void EventManager::cursorPosCallbackWrapper(GLFWwindow *window, double xpos, dou
 
 void EventManager::framebufferSizeCallback(GLFWwindow *window, int w, int h)
 {
-
   EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
   if (self)
   {
@@ -299,5 +315,20 @@ void EventManager::getKey()
   if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS)
   {
     mainCam->moveBackward();
+  }
+}
+
+void EventManager::getMouseEvent()
+{
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.WantCaptureMouse)
+  {
+    return;
+  }
+  if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+  {
+    glfwGetCursorPos(window_, &lastX, &lastY);
+    Ray ray = mainCam->generateRay(lastX, lastY);
+    sculptor_.stroke(ray);
   }
 }

@@ -5,7 +5,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include "importer_desc.hpp"
-#include <mesh.hpp>
+#include <../sculptor/dyn_mesh.hpp>
 #include <stdexcept>
 #include <vertex.hpp>
 
@@ -13,7 +13,7 @@ class ImporterEx{
 public:
   ImporterEx() = default;
   ImportResult loadScene(const char *filepath);
-  Mesh loadModel(const char *filepath, MemoryAllocator &allocator);
+  DynMesh loadModel(const char *filepath, MemoryAllocator &allocator);
 
 private:
   void processMaterialsAndTextures(const aiScene *scene, const std::string &folder, ImportResult &out);

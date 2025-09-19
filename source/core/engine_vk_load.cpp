@@ -480,6 +480,4 @@ void Engine::vkDeviceload()
   vkGetDeviceQueue(device_h, present_family, 0, &present_q);
   spdlog::info("LogicalDevice: Queues obtained.");
 
-  allocator     = std::make_unique<MemoryAllocator>(physical_device_h, device_h);
-  eventManager_ = std::make_unique<EventManager>(window_h);
 }
