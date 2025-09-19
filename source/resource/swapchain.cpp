@@ -1,4 +1,4 @@
-#include <swapChain.hpp>
+#include <swapchain.hpp>
 
 Swapchain::Swapchain(const SwapchainCreateInfo &info) :
   device(info.device),

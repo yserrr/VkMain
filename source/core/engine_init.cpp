@@ -2,6 +2,8 @@
 
 void Engine::initialize()
 {
+  allocator     = std::make_unique<MemoryAllocator>(physical_device_h, device_h);
+  eventManager_ = std::make_unique<EventManager>(window_h);
   SwapchainCreateInfo swapchainInfo{};
   swapchainInfo.device         = device_h;
   swapchainInfo.physicalDevice = physical_device_h;
@@ -16,7 +18,7 @@ void Engine::initialize()
   frameCount                   = swapchain->getImages().size();
   renderPassInfos.resize(frameCount);
   spdlog::info("create swapchain");
-
+  eventManager_->currentExtent = swapchain->getExtent();
   ViewManagerCreateInfo imageManagerInfo{};
   imageManagerInfo.device    = device_h;
   imageManagerInfo.images    = &(swapchain->getImages());
@@ -70,8 +72,8 @@ void Engine::initialize()
   resource_manager_create_info.device    = device_h;
   resource_manager_create_info.allocator = allocator.get();
 
-  resource_manager_ = std::make_unique<ResourceManager>(resource_manager_create_info);
-  resource_manager_->setTexture();
+  resourceManager_ = std::make_unique<ResourceManager>(resource_manager_create_info);
+  resourceManager_->setTexture();
 
   spdlog::info("init renderer");
   RendererCreateInfo renderinfo{};
@@ -79,12 +81,12 @@ void Engine::initialize()
   renderinfo.device_h     = device_h;
   renderinfo.allocator    = allocator.get();
   renderinfo.extent       = extent;
-  renderinfo.asset        = resource_manager_.get();
+  renderinfo.asset        = resourceManager_.get();
   renderinfo.swapchain    = swapchain.get();
   renderinfo.imageManager = imageManager.get();
   renderinfo.renderPass   = renderpass_h;
   sceneRenderer           = std::make_unique<SceneRenderer>(renderinfo);
-  sceneRenderer->createPipeline((resource_manager_->descriptorManager->getLayouts()));
+  sceneRenderer->createPipeline((resourceManager_->descriptorManager->getLayouts()));
 
   pipeline_layout_h = sceneRenderer->getPipelineLayout();
 
@@ -98,14 +100,14 @@ void Engine::initialize()
   UIinfo.present_family    = present_family;
   UIinfo.graphics_q        = graphics_q;
   uiRenderer               = std::make_unique<UIRenderer>(UIinfo);
-  uiRenderer->setResourceManager(resource_manager_.get());
+  uiRenderer->setResourceManager(resourceManager_.get());
 
-  Camera *cam = resource_manager_->getCamera();
-
+  Camera *cam = resourceManager_->getCamera();
   sceneRenderer->setCamera(cam);
   eventManager_->setCamera(cam);
+  eventManager_->resourcesManager_ = resourceManager_.get();
 
-  resource_manager_->uploadDescriptors();
+  resourceManager_->uploadDescriptors();
 
   eventManager_->setRenderer(sceneRenderer.get());
 }

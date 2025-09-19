@@ -7,7 +7,7 @@
 #include <ktx/include/ktx.h>
 #include <ktx/include/ktxvulkan.h>
 
-struct textureCreateInfo{
+struct TextureCreateInfo{
   VkDevice device;
   VkSampler sampler;
   const char *filename;
@@ -57,7 +57,7 @@ struct textureCreateInfo{
 //};
 
 struct VulkanTexture{
-  VulkanTexture(textureCreateInfo info);
+  VulkanTexture(TextureCreateInfo info);
   ~VulkanTexture();
 
   void loadImage(const char *filename);

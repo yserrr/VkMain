@@ -46,6 +46,7 @@ include_directories(
         ${SOURCE_DIR}/renderer
         ${SOURCE_DIR}/model
         ${SOURCE_DIR}/core
+        ${SOURCE_DIR}/sculptor
 
         ${EXTERN_DIR}
         ${EXTERN_DIR}/imgui
@@ -88,8 +89,8 @@ set(COMMON_SRC
         source/core/engine.cpp
         source/core/engine_init.cpp
         source/core/engine_vk_load.cpp
-        source/core/resource_manager.cpp
         source/core/resource_manager_init.cpp
+        source/core/resource_manager.cpp
         source/core/event_manager.cpp
         source/core/renderer.cpp
         source/core/renderer_draw.cpp
@@ -109,9 +110,12 @@ set(COMMON_SRC
         source/model/texture.cpp
         source/model/camera.cpp
         source/model/importer.cpp
-        source/model/mesh.cpp
+        source/sculptor/dyn_mesh.cpp
         source/resource/swapchain.cpp
         source/resource/semaphore_pool.cpp
+
+
+        source/sculptor/sculptor.cpp
 
         extern/imgui/imgui_impl_glfw.cpp
         extern/imgui/imgui.cpp
@@ -121,11 +125,14 @@ set(COMMON_SRC
         extern/imgui/imgui_widgets.cpp
         extern/imgui/back/imgui_impl_vulkan.cpp
 
+
         source/resource/renderpass_pool.cpp
         source/resource/command_pool.cpp
         source/resource/semaphore_pool.cpp
         source/resource/fence_pool.cpp
         source/resource/sampler_builder.cpp
+        source/core/log_sink.cpp
+        source/core/formater.cpp
 )
 
 add_executable(exe ${COMMON_SRC})

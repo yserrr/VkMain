@@ -504,7 +504,7 @@ void ImporterEx::processLights(const aiScene *scene, ImportResult &out)
 }
 
 ///simple 
-Mesh ImporterEx::loadModel(const char *filepath, MemoryAllocator &allocator)
+DynMesh ImporterEx::loadModel(const char *filepath, MemoryAllocator &allocator)
 {
   Assimp::Importer importer;
   const aiScene *scene = importer.ReadFile(filepath,
@@ -516,7 +516,6 @@ Mesh ImporterEx::loadModel(const char *filepath, MemoryAllocator &allocator)
   if (!scene || !scene->HasMeshes())
   {
     spdlog::error("Failed to load model or no meshes found: {}", importer.GetErrorString());
-    throw std::runtime_error("Failed to load model or no meshes found.");
   }
 
   std::vector<VertexAll> vertices;
@@ -605,7 +604,7 @@ Mesh ImporterEx::loadModel(const char *filepath, MemoryAllocator &allocator)
     }
   }
   spdlog::info("모델 로드 성공");
-  return Mesh(vertices, indices, allocator);
+  return DynMesh(vertices, indices, allocator);
 }
 
 // 카메라

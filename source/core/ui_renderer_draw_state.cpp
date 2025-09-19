@@ -13,19 +13,6 @@ void UIRenderer::drawVertexState(ImVec2 size)
     ImGui::SetNextWindowPos(ImVec2(20, 55), ImGuiCond_Always);
     ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(size);
-    if (ImGui::Begin("Vertex State:", nullptr, ImGuiWindowFlags_NoMove))
-    {
-      ImGui::BeginChild("ScrollRegion", ImVec2(0, 300), true);
-      //auto v_state = controler.checkVertexState();
-
-      ImGui::Text("Vertices:");
-      //for (int i = 0; i < v_state.size i++)
-      //{
-      //  ImGui::Text(" [%d] : %f, %f, %f", i, v_state[i].position.x, v_state[i].position.y, v_state[i].position.z);
-      //}
-      //ImGui::EndChild();
-    }
-    ImGui::End();
   }
 }
 
@@ -211,8 +198,6 @@ void UIRenderer::drawMouseState(ImVec2 size)
 void UIRenderer::drawFramebufferState()
 {
   {
-    const ImGuiViewport *vp = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(ImVec2(10, vp->Pos.y+ vp->Size.y-100));
     ImGui::SetNextWindowBgAlpha(0.35f);
     if (ImGui::Begin("Overlay",
                      nullptr,

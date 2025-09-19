@@ -1,9 +1,10 @@
 #include <common.hpp>
-#include <swapChain.hpp>
+#include <swapchain.hpp>
 #include <frame_pool.hpp>
 #include <command_pool_manager.hpp>
 #include <../resource/renderpass_pool.hpp>
 #include <../resource/pipeline.hpp>
+#include "log_sink.hpp"
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_vulkan.h>
@@ -42,7 +43,7 @@ class UIRenderer{
   friend class Engine;
 
 public:
-  UIRenderer(UIRendererCreateInfo info);\
+  UIRenderer(UIRendererCreateInfo info);
 
   void rec(VkCommandBuffer command);
   void render(VkCommandBuffer command);
@@ -77,8 +78,10 @@ private:
 
   bool smallUi_ = true; // 작은 창 유지 토글
   float color[4];
+  std::vector<std::string> uploadedMesh_;
+  std::vector<std::string> uploadedTexture_;
   std::vector<UICall> callStack_;
-
+  std::shared_ptr<UILogSink> sink_;
   VkDescriptorSet backgroundDescriptor_;
   VulkanTexture *backgroundTexture_;
   ResourceManager *resourceManager_;

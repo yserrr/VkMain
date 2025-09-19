@@ -10,6 +10,10 @@ UIRenderer::UIRenderer(UIRendererCreateInfo info)
     present_family(info.present_family),
     graphics_q(info.graphics_q)
 {
+  sink_ = std::make_shared<UILogSink>();
+  spdlog::set_default_logger(std::make_shared<spdlog::logger>("default", sink_));
+  spdlog::set_level(spdlog::level::info);
+
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
@@ -122,15 +126,17 @@ void UIRenderer::setupStyle()
   style.ItemInnerSpacing = ImVec2(6, 6);
   style.ScrollbarSize    = 14.0f;
   style.GrabMinSize      = 14.0f;
+  style.FontSizeBase     = 11;
 }
 
-void UIRenderer:: uploadBackgroundImage()
+void UIRenderer::uploadBackgroundImage()
 {
-  backgroundTexture_ = resourceManager_  ->getTexture(std::string("VkVideo.png"));
+  backgroundTexture_ = resourceManager_->getTexture(std::string("VkVideo.png"));
   if (backgroundTexture_ == nullptr)
   {
     throw std::runtime_error("failed to load background image");
   }
-  backgroundDescriptor_ = ImGui_ImplVulkan_AddTexture(backgroundTexture_->getSampler() , backgroundTexture_ ->textureImageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL );
-
+  backgroundDescriptor_ = ImGui_ImplVulkan_AddTexture(backgroundTexture_->getSampler(),
+                                                      backgroundTexture_->textureImageView,
+                                                      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }

@@ -1,6 +1,6 @@
 #include <texture.hpp>
 
-VulkanTexture::VulkanTexture(textureCreateInfo info)
+VulkanTexture::VulkanTexture(TextureCreateInfo info)
   : device(info.device),
     textureSampler(info.sampler),
     allocator(*info.allocator)

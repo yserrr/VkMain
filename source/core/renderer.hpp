@@ -9,8 +9,8 @@
 #include  <frame_pool.hpp>
 #include <../resource/shader_module.hpp>
 #include  <swapchain_view.hpp>
-#include  <swapChain.hpp>
-#include  <mesh.hpp>
+#include  <swapchain.hpp>
+#include <../sculptor/dyn_mesh.hpp>
 #include <../resource/sampler_builder.hpp>
 #include  <texture.hpp>
 #include  <resource_manager.hpp>
