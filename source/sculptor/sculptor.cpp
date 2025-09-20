@@ -1,6 +1,7 @@
 #include "sculptor.hpp"
-
 #include "spdlog/details/os.h"
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 void Sculptor::stroke(Ray ray)
 {
@@ -8,7 +9,7 @@ void Sculptor::stroke(Ray ray)
   if (castRayToMesh(ray.origin, ray.direction))
   {
     glm::vec3 hitPoint = hit_t * ray.direction + ray.origin;
-    for (auto &v: mesh_->vertices)
+    for (auto &v: model->mesh->vertices)
     {
       float dist = glm::distance(hitPoint, v.position);
       if (dist < brush.radius)
@@ -17,12 +18,12 @@ void Sculptor::stroke(Ray ray)
         //VertexAll vertex{};
         //vertex.position = (hitPoint + v.position) / 2.0f;
         //vertex.normal =
-        //mesh_->indices.push_back()
+        //model->mesh->indices.push_back()
         float falloff = 1.0f - (dist / brush.radius);
         v.position += v.normal * brush.strength * falloff;
       }
     }
-    mesh_->reNomalCompute();
+    model->mesh->reNomalCompute();
     dirty_ = true;
   }
   return;
@@ -65,24 +66,24 @@ bool Sculptor::RayIntersectTriangle(const glm::vec3 &orig,
 
 bool Sculptor::castRayToMesh(const glm::vec3 &rayOrig, const glm::vec3 &rayDir)
 {
-  hitAny    = false;
-  hit_t     = FLT_MAX;
-  hitTriIdx = -1;
+  hitAny         = false;
+  hit_t          = FLT_MAX;
+  hitTriangleIdx = -1;
   #pragma omp parallel for
-  for (size_t i = 0; i < mesh_->indices.size(); i += 3)
+  for (size_t i = 0; i < model->mesh->indices.size(); i += 3)
   {
-    glm::vec3 v0 = mesh_->vertices[mesh_->indices[i]].position;
-    glm::vec3 v1 = mesh_->vertices[mesh_->indices[i + 1]].position;
-    glm::vec3 v2 = mesh_->vertices[mesh_->indices[i + 2]].position;
+    glm::vec3 v0 = model->mesh->vertices[model->mesh->indices[i]].position;
+    glm::vec3 v1 = model->mesh->vertices[model->mesh->indices[i + 1]].position;
+    glm::vec3 v2 = model->mesh->vertices[model->mesh->indices[i + 2]].position;
 
     float t, u, v;
     if (RayIntersectTriangle(rayOrig, rayDir, v0, v1, v2, t, u, v))
     {
       if (t < hit_t)
       {
-        hit_t     = t;
-        hitTriIdx = i / 3;
-        hitAny    = true;
+        hit_t          = t;
+        hitTriangleIdx = i / 3;
+        hitAny         = true;
       }
     }
   }
@@ -98,27 +99,27 @@ bool Sculptor::castRayToMesh(const glm::vec3 &rayOrig, const glm::vec3 &rayDir)
 
 uint64_t Sculptor::sculptMidPoint(uint32_t i0, uint32_t i1)
 {
-  uint64_t key = getCash(i0, i1);
+  uint64_t key = getVertexCash(i0, i1);
   if (midpointCache.count(key))
   {
     return midpointCache[key];
   }
-  glm::vec3 p0 = mesh_->vertices[i0].position;
-  glm::vec3 p1 = mesh_->vertices[i1].position;
-  glm::vec3 n0 = mesh_->vertices[i0].normal;
-  glm::vec3 n1 = mesh_->vertices[i1].normal;
+  glm::vec3 p0 = model->mesh->vertices[i0].position;
+  glm::vec3 p1 = model->mesh->vertices[i1].position;
+  glm::vec3 n0 = model->mesh->vertices[i0].normal;
+  glm::vec3 n1 = model->mesh->vertices[i1].normal;
 
   VertexAll mid;
   mid.position = 0.5f * (p0 + p1);
   mid.normal   = glm::normalize(n0 + n1);
 
-  uint32_t newIndex = static_cast<uint32_t>(mesh_->vertices.size());
-  mesh_->vertices.push_back(mid);
+  uint32_t newIndex = static_cast<uint32_t>(model->mesh->vertices.size());
+  model->mesh->vertices.push_back(mid);
   midpointCache[key] = newIndex;
   return newIndex;
 }
 
-uint64_t Sculptor::getCash(uint32_t a, uint32_t b)
+uint64_t Sculptor::getVertexCash(uint32_t a, uint32_t b)
 {
   if (a > b) std::swap(a, b);
   return (static_cast<uint64_t>(a) << 32) | b;
@@ -127,11 +128,11 @@ uint64_t Sculptor::getCash(uint32_t a, uint32_t b)
 void Sculptor::subdivideMesh()
 {
   std::vector<uint32_t> newIndices;
-  for (size_t i = 0; i < mesh_->indices.size(); i += 3)
+  for (size_t i = 0; i < model->mesh->indices.size(); i += 3)
   {
-    uint32_t i0 = mesh_->indices[i];
-    uint32_t i1 = mesh_->indices[i + 1];
-    uint32_t i2 = mesh_->indices[i + 2];
+    uint32_t i0 = model->mesh->indices[i];
+    uint32_t i1 = model->mesh->indices[i + 1];
+    uint32_t i2 = model->mesh->indices[i + 2];
 
     uint32_t m0 = sculptMidPoint(i0, i1);
     uint32_t m1 = sculptMidPoint(i1, i2);
@@ -142,5 +143,21 @@ void Sculptor::subdivideMesh()
     newIndices.insert(newIndices.end(), {i2, m2, m1});
     newIndices.insert(newIndices.end(), {m0, m1, m2});
   }
-  mesh_->indices = std::move(newIndices);
+  model->mesh->indices = std::move(newIndices);
+}
+
+void Sculptor::rotate(float dYawDeg, float dPitDeg)
+{
+  glm::vec3 right = model->transform.rotation * glm::vec3(1, 0, 0);
+  glm::vec3 up    = model->transform.rotation * glm::vec3(0, 1, 0);
+
+  glm::quat pitchRotation = glm::angleAxis(glm::radians(dPitDeg), right); // 로컬 X
+  glm::quat yawRotation   = glm::angleAxis(glm::radians(dYawDeg), up);    // 로컬 Y
+
+  model->transform.rotation = glm::normalize(yawRotation * pitchRotation * model->transform.rotation);
+
+  glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), model->transform.position) *
+                       glm::toMat4(model->transform.rotation) *
+                       glm::scale(glm::mat4(1.0f), model->transform.scale);
+  model->constant.modelMatrix = modelMat;
 }

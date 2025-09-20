@@ -10,9 +10,6 @@ UIRenderer::UIRenderer(UIRendererCreateInfo info)
     present_family(info.present_family),
     graphics_q(info.graphics_q)
 {
-  sink_ = std::make_shared<UILogSink>();
-  spdlog::set_default_logger(std::make_shared<spdlog::logger>("default", sink_));
-  spdlog::set_level(spdlog::level::info);
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();

@@ -1,7 +1,5 @@
 #include<resource_manager.hpp>
 
-void ResourceManager::setTexture() {}
-
 VulkanTexture *ResourceManager::getTexture(Key path)
 {
   auto it = textures_.find(path);
@@ -31,12 +29,13 @@ void ResourceManager::uploadMesh(VkCommandBuffer command, std::string path)
 {
   std::string modelPath = std::string(ASSET_MODELS_DIR) + path;
   spdlog::info("Loading {} ", modelPath.c_str());
-  DynMesh tempMesh = importer_.loadModel(modelPath.c_str(), allocator_);
-  tempMesh.name = path;
-  std::unique_ptr<DynMesh> mesh = std::make_unique<DynMesh>(tempMesh.getVertices(), tempMesh.getIndices(), allocator_);
+  Mesh tempMesh              = importer_.loadModel(modelPath.c_str(), allocator_);
+  tempMesh.name              = path;
+  std::unique_ptr<Mesh> mesh = std::make_unique<Mesh>(tempMesh.getVertices(), tempMesh.getIndices(), allocator_);
   mesh->copyBuffer(command);
-  currentMesh   = mesh.get();
-  meshes_[path] = std::move(mesh);
+  selectedModel.mesh = mesh.get();
+  selectedModel.material = materials_["base"].get();
+  meshes_[path]      = std::move(mesh);
 }
 
 void ResourceManager::uploadTexture(VkCommandBuffer command, std::string path)

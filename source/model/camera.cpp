@@ -6,15 +6,14 @@ static float toRadians(float deg)
 }
 
 Camera::Camera(CamCI info)
-  : position_(0.0f, 0.0f, 100.0f),
+  : pos_(0.0f, 0.0f, 10.0f),
     dir_(0.0f, 0.0f, -1.0f),
     up_(0.0f, 1.0f, 0.0f),
     fov_(info.fov),
     aspect(info.aspectRatio),
     nearPlane(info.nearPlane),
-    farPlane(info.farPlane),
-    yaw(-90.0f),
-    pitch(0.0)
+    farPlane(info.farPlane)
+
 {
   right_ = glm::normalize(glm::cross(dir_, up_));
   right_ = glm::normalize(right_);
@@ -26,6 +25,7 @@ void Camera::camUpdate()
 {
   ubo.view = getViewMatrix();
   ubo.proj = getProjectionMatrix();
+  ubo.camPos = pos_;
 }
 
 void Camera::setSpeed(float ds)
@@ -35,7 +35,7 @@ void Camera::setSpeed(float ds)
 
 glm::mat4 Camera::getViewMatrix() const
 {
-  return glm::lookAt(position_, position_ + dir_, up_);
+  return glm::lookAt(pos_, pos_ + dir_, up_);
 }
 
 glm::mat4 Camera::getProjectionMatrix() const
@@ -45,20 +45,6 @@ glm::mat4 Camera::getProjectionMatrix() const
   return pers;
 }
 
-void Camera::setPosition(const glm::vec3 &pos)
-{
-  position_ = pos;
-}
-
-void Camera::setDirection(const glm::vec3 &dir)
-{
-  dir_ = glm::normalize(dir);
-}
-
-void Camera::setAspectRatio(float a)
-{
-  aspect = a;
-}
 
 Ray Camera::generateRay(double posX, double posY)
 {
@@ -70,36 +56,41 @@ Ray Camera::generateRay(double posX, double posY)
   float yView      = yNdc * tanFov;
   glm::vec3 rayDir = glm::vec3(-xView, yView, -1.0f);
   rayDir = glm::normalize(rayDir);
-  std::cout << rayDir.x << " " << rayDir.y << " " << rayDir.z << std::endl;
-  Ray ray{position_, rayDir};
+  Ray ray{pos_, rayDir};
   return ray;
 }
 
 void Camera::moveForward()
 {
-  position_ += delta * dir_;
+  pos_ += delta * dir_;
   camUpdate();
 }
 
 void Camera::moveBackward()
 {
-  position_ -= delta * dir_;
+  pos_ -= delta * dir_;
   camUpdate();
 }
 
 void Camera::moveRight()
 {
-  position_ += delta * right_;
+  pos_ += delta * right_;
 }
 
 void Camera::moveLeft()
 {
-  position_ -= delta * right_;
+  pos_ -= delta * right_;
 }
 
 void Camera::directionReverse()
 {
   dir_ = -dir_;
+}
+
+void Camera::lookAt(glm::vec3 center)
+{
+  dir_ = glm::normalize(center - pos_);
+  camUpdate();
 }
 
 void Camera::addFov(float dt)
@@ -108,15 +99,18 @@ void Camera::addFov(float dt)
   camUpdate();
 }
 
-void Camera::addQuaterian(float dYawDeg, float dPitDeg)
+void Camera::rotate(float dYawDeg, float dPitDeg)
 {
-  glm::quat pitchRotation = glm::angleAxis(toRadians(dPitDeg), right_);             // 현재 right_ 축 기준
-  glm::quat yawRotation   = glm::angleAxis(toRadians(dYawDeg), glm::vec3(0, 1, 0)); // 월드 Y축 기준
-  orientation_            = yawRotation * pitchRotation * orientation_;             // 새로운 회전을 기존 회전에 곱함 (순서 중요)
-  orientation_            = glm::normalize(orientation_);
-
-  dir_   = glm::normalize(orientation_ * glm::vec3(0, 0, -1));
-  up_    = glm::normalize(orientation_ * glm::vec3(0, 1, 0));
-  right_ = glm::normalize(glm::cross(dir_, up_));
+  pitchAccum += dPitDeg;
+  pitchAccum = std::clamp(pitchAccum, -89.0f, 89.0f);
+  glm::quat pitchRotation = glm::angleAxis(glm::radians(pitchAccum), right_);
+  glm::quat yawRotation   = glm::angleAxis(glm::radians(dYawDeg), glm::vec3(0,1,0));
+  orientation_ = yawRotation * pitchRotation;
+  orientation_ = glm::normalize(orientation_);
+  dir_   = glm::normalize(orientation_ * glm::vec3(0,0,-1));
+  right_ = glm::normalize(glm::cross(dir_, glm::vec3(0,1,0)));
+  if (glm::length(right_) < 1e-6f) right_ = glm::vec3(1,0,0);
+  up_    = glm::cross(right_, dir_);
+  spdlog::info("direction:: {} {} {}", dir_.x , dir_.y , dir_.z);
   camUpdate();
 }

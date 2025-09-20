@@ -16,10 +16,7 @@ struct CamCI{
   float farPlane;
 };
 
-class Camera{
-  friend class ResourceManager;
-  friend class EventManager;
-public:
+struct Camera{
   Camera(CamCI info);
   void camUpdate();
   void uploadDescriptor(VkDescriptorSet set);
@@ -34,18 +31,20 @@ public:
   void moveRight();
   void moveLeft();
   void directionReverse();
+  void lookAt(glm::vec3 center);
   void addFov(float dt);
-  void addQuaterian(float dYawDeg, float dPitDeg);
+  void rotate(float dYawDeg, float dPitDeg);
 
   Ray generateRay(double posX, double posY);
-private:
   VkExtent2D currentExtent;
-  struct cameraUBO{
+
+  alignas (16)struct cameraUBO{
     glm::mat4 view;
     glm::mat4 proj;
+    glm::vec3 camPos;
   } ubo;
-
-  glm::vec3 position_;
+  float pitchAccum = 0.0f;
+  glm::vec3 pos_;
   glm::vec3 dir_;
   glm::vec3 right_;
   glm::vec3 up_;
@@ -55,8 +54,6 @@ private:
   float nearPlane;
   float farPlane;
   float delta = 1;
-  float yaw;
-  float pitch;
   glm::quat orientation_{};
 };
 

@@ -45,7 +45,7 @@ std::deque<std::string> UILogSink::snapshot()
   return buffer_;
 }
 
-inline void UILogSink::clear()
+void UILogSink::clear()
 {
   std::lock_guard<std::mutex> lk(mutex_);
   buffer_.clear();

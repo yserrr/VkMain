@@ -25,8 +25,8 @@ void SceneRenderer::pushConstant(VkCommandBuffer command)
       pipeline_layout_h,
       VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
       0,
-      sizeof(PushConstant),
-      &resourceManager.pushConstant_
+      sizeof(MaterialConstant),
+      &resourceManager.selectedModel.constant
   );
 }
 

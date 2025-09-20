@@ -8,11 +8,11 @@
 #define GRAPHICSPIPELINE_HPP 
 
 struct PipelineCreateInfo{
-  VkDevice                                  device;
-  VkExtent2D                                extent;
-  VkRenderPass                              renderPass;
-  VkShaderModule                            vertShaderModule;
-  VkShaderModule                            fragShaderModule;
+  VkDevice device;
+  VkExtent2D extent;
+  VkRenderPass renderPass;
+  VkShaderModule vertShaderModule;
+  VkShaderModule fragShaderModule;
   const std::vector<VkDescriptorSetLayout> *descriptorSetLayouts;
 };
 
@@ -140,21 +140,20 @@ public:
     };
     VkPipelineDynamicStateCreateInfo dynamicStateInfo{};
     dynamicStateInfo.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-    dynamicStateInfo.dynamicStateCount = dynamicStates.size() ;
+    dynamicStateInfo.dynamicStateCount = dynamicStates.size();
     dynamicStateInfo.pDynamicStates    = dynamicStates.data();
-
 
     VkPushConstantRange pushConstantRange{};
     pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-    pushConstantRange.offset     = 0;  // 시작 위치
-    pushConstantRange.size       = sizeof(PushConstant);
+    pushConstantRange.offset     = 0;
+    pushConstantRange.size       = sizeof(MaterialConstant);
 
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
-    pipelineLayoutInfo.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = info.descriptorSetLayouts->size();
-    pipelineLayoutInfo.pSetLayouts    = info.descriptorSetLayouts->data();
+    pipelineLayoutInfo.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineLayoutInfo.setLayoutCount         = info.descriptorSetLayouts->size();
+    pipelineLayoutInfo.pSetLayouts            = info.descriptorSetLayouts->data();
     pipelineLayoutInfo.pushConstantRangeCount = 1;
-    pipelineLayoutInfo.pPushConstantRanges= &pushConstantRange;
+    pipelineLayoutInfo.pPushConstantRanges    = &pushConstantRange;
 
     if (vkCreatePipelineLayout(info.device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
     {
@@ -202,8 +201,8 @@ public:
   }
 
 private:
-  VkDevice         device;
-  VkPipeline       graphicsPipeline;
+  VkDevice device;
+  VkPipeline graphicsPipeline;
   VkPipelineLayout pipelineLayout;
 };
 

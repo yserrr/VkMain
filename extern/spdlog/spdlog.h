@@ -265,7 +265,7 @@ inline void debug(const T &msg)
 template<typename T>
 inline void info(const T &msg)
 {
-    default_logger_raw()->info(msg);
+     default_logger_raw()->info(msg);
 }
 
 template<typename T>

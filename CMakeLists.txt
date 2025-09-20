@@ -110,12 +110,13 @@ set(COMMON_SRC
         source/model/texture.cpp
         source/model/camera.cpp
         source/model/importer.cpp
-        source/sculptor/dyn_mesh.cpp
+        source/model/mesh.cpp
         source/resource/swapchain.cpp
         source/resource/semaphore_pool.cpp
 
 
         source/sculptor/sculptor.cpp
+        source/sculptor/sculptor_act.cpp
 
         extern/imgui/imgui_impl_glfw.cpp
         extern/imgui/imgui.cpp

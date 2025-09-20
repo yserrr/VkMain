@@ -1,32 +1,30 @@
-#include "dyn_mesh.hpp"
+#include "mesh.hpp"
 
+Mesh::~Mesh() {}
 
-DynMesh::~DynMesh() {}
-DynMesh::DynMesh(const std::vector<VertexAll> &vertices,
-                 const std::vector<uint32_t> &indices,
-                 MemoryAllocator &allocator) : vertices(vertices), indices(indices), allocator(allocator)
+Mesh::Mesh(const std::vector<VertexAll> &vertices,
+           const std::vector<uint32_t> &indices,
+           MemoryAllocator &allocator) : vertices(vertices), indices(indices), allocator(allocator)
 {
   recenterMesh();
   reNomalCompute();
-  vertexSize   = (sizeof(vertices[0])) * vertices.size();
-  vertexSize= vertexSize* 4;
-  indiceSize   = sizeof(indices[0]) * indices.size();
-  indiceSize= indiceSize* 4;
-  vertexBuffer = std::make_unique<StaticBuffer>(allocator, vertexSize, BufferType::VERTEX);
-  indexBuffer  = std::make_unique<StaticBuffer>(allocator, indiceSize, BufferType::INDEX);
+  vertexSize      = (sizeof(vertices[0])) * vertices.size()*2;
+  indiceSize      = sizeof(indices[0]) * indices.size()*2 ;
+  vertexBuffer    = std::make_unique<StaticBuffer>(allocator, vertexSize, BufferType::VERTEX);
+  indexBuffer     = std::make_unique<StaticBuffer>(allocator, indiceSize, BufferType::INDEX);
   vertexBuffer->getStagingBuffer(vertices.data());
   indexBuffer->getStagingBuffer(indices.data());
   vertexBuffer->createMainBuffer();
   indexBuffer->createMainBuffer();
 }
 
-void DynMesh::copyBuffer(VkCommandBuffer commandBuffer) const
+void Mesh::copyBuffer(VkCommandBuffer commandBuffer) const
 {
   vertexBuffer->copyBuffer(commandBuffer);
   indexBuffer->copyBuffer(commandBuffer);
 }
 
-void DynMesh::bind(VkCommandBuffer commandBuffer)
+void Mesh::bind(VkCommandBuffer commandBuffer)
 {
   VkDeviceSize offsets[] = {0};
   VkBuffer vertexBufs[]  = {*(vertexBuffer->getBuffer())};
@@ -34,30 +32,32 @@ void DynMesh::bind(VkCommandBuffer commandBuffer)
   vkCmdBindIndexBuffer(commandBuffer, *(indexBuffer->getBuffer()), 0, VK_INDEX_TYPE_UINT32);
 }
 
-void DynMesh::draw(VkCommandBuffer commandBuffer) const
+void Mesh::draw(VkCommandBuffer commandBuffer) const
 {
   vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 }
 
-void DynMesh::dynMeshUpdate(VkCommandBuffer commandBuffer)
+void Mesh::dynMeshUpdate(VkCommandBuffer commandBuffer)
 {
+  vertexSize      = (sizeof(vertices[0])) * vertices.size();
+  indiceSize      = sizeof(indices[0]) * indices.size();
   vertexBuffer->getStagingBuffer(vertices.data());
   indexBuffer->getStagingBuffer(indices.data());
   vertexBuffer->copyBuffer(commandBuffer);
   indexBuffer->copyBuffer(commandBuffer);
 }
 
-const std::vector<VertexAll> &DynMesh::getVertices() const
+const std::vector<VertexAll> &Mesh::getVertices() const
 {
   return vertices;
 }
 
-const std::vector<uint32_t> &DynMesh::getIndices() const
+const std::vector<uint32_t> &Mesh::getIndices() const
 {
   return indices;
 }
 
-void DynMesh::recenterMesh()
+void Mesh::recenterMesh()
 {
   if (vertices.empty()) return;
   glm::vec3 centroid(0.0f);
@@ -73,7 +73,7 @@ void DynMesh::recenterMesh()
   }
 }
 
-void DynMesh::reNomalCompute()
+void Mesh::reNomalCompute()
 {
   for (auto &v: vertices)
   {

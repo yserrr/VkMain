@@ -504,7 +504,7 @@ void ImporterEx::processLights(const aiScene *scene, ImportResult &out)
 }
 
 ///simple 
-DynMesh ImporterEx::loadModel(const char *filepath, MemoryAllocator &allocator)
+Mesh ImporterEx::loadModel(const char *filepath, MemoryAllocator &allocator)
 {
   Assimp::Importer importer;
   const aiScene *scene = importer.ReadFile(filepath,
@@ -604,7 +604,7 @@ DynMesh ImporterEx::loadModel(const char *filepath, MemoryAllocator &allocator)
     }
   }
   spdlog::info("모델 로드 성공");
-  return DynMesh(vertices, indices, allocator);
+  return Mesh(vertices, indices, allocator);
 }
 
 // 카메라

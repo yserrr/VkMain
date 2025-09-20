@@ -17,4 +17,15 @@ struct Brush{
   float strength;
   BrushType type;
 };
+
+struct BrushInflate : public Brush{};
+
+struct BrushFlatten : public Brush{};
+
+struct BrushFlattenSmooth : public Brush{};
+
+struct BrushPinch : public Brush{};
+
+struct BrushPinchSmooth : public Brush{};
+
 #endif //MYPROJECT_BRUSH_HPP

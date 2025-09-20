@@ -10,7 +10,7 @@
 #include <../resource/shader_module.hpp>
 #include  <swapchain_view.hpp>
 #include  <swapchain.hpp>
-#include <../sculptor/dyn_mesh.hpp>
+#include <../model/mesh.hpp>
 #include <../resource/sampler_builder.hpp>
 #include  <texture.hpp>
 #include  <resource_manager.hpp>

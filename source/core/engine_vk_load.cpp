@@ -455,6 +455,7 @@ void Engine::vkDeviceload()
 
   VkPhysicalDeviceFeatures2 deviceFeatures2{};
   deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+  deviceFeatures2.features.robustBufferAccess = VK_TRUE;
   //chaining
   deviceFeatures2.pNext          = &indexingFeatures;
   indexingFeatures.pNext         = &dynamicRenderingFeatures;

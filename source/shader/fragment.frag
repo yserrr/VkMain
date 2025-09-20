@@ -1,121 +1,135 @@
 #version 450
-#extension GL_EXT_nonuniform_qualifier: require
-//| Descriptor Set | Binding Slot  |
-//| -------------- | ------------- | ------------------------------------------------
-//| `set = 0`      | `binding = 0` | Camera / Global Uniform
-//| `set = 0`      | `binding = 1` | Lighting_dynamic
-//| `set = 1`      | `binding = 0` | Material texture-bindless
-//| `set = 2`      | `binding = 1` | Material
-//| `set = 2`      | `binding = 0` | Light
+#extension GL_EXT_nonuniform_qualifier : require
 
 struct GPULight {
-  vec4 position;       // 16 bytes
-  vec4 direction;      // vec3 + padding (예: direction.xyz, 0.0f) - 16 bytes
-  vec4 color;          // 16 bytes
-  vec2 coneAngles;     // innerCone, outerCone packed into vec2 - 8 bytes
-  vec2 padding;        // 패딩용 (8 bytes) -> 전체 16 bytes 맞춤
-};
-layout (location = 0) in vec2 fragTexCoord;
-layout (location = 0) out vec4 outColor;
-
-layout (set = 1, binding = 0) uniform sampler2D bindlessTexture[];
-layout (set = 1, binding = 1) uniform sampler2D albedo;
-layout (set = 1, binding = 2) uniform sampler2D normal;
-layout (set = 1, binding = 3) uniform sampler2D roughness;
-
-layout (std140, set = 0, binding = 1) uniform LightBuffer {
-  GPULight lights[16];
-  int lightCount;
+    vec4 position;
+    vec4 direction;
+    vec4 color;
+    vec2 coneAngles;
+    vec2 padding;
 };
 
-layout (push_constant) uniform PushConstants {
-  mat4 model;
-  vec4 color;
-  uint bindlessIndex;
-} pc;
+layout(location = 0) in vec3 fragPos;
+layout(location = 1) in vec3 normal;
+layout(location = 2) in vec2 texCoord;
+layout(location = 3) in mat3 TBN;
+layout (location = 6) in vec3 camPosIn;
 
-void main() {
-  vec4 texColor = texture(bindlessTexture[pc.bindlessIndex], fragTexCoord);
-  float eps = 1e-5;
-  if (all(lessThan(abs(texColor), vec4(eps)))) {
-    texColor += vec4(1.0);
-  }
-  vec3 fragPos = vec3(fragTexCoord, 0.0); // 임시 위치
-  vec3 lightDir;
-  float intensity;
-  vec3 normal = vec3(0.0, 0.0, 1.0); // 임시 노멀
-
-  GPULight light = lights[0];
-  vec3 lightPos = vec3(light.position);
-  lightDir = normalize(lightPos - fragPos);
-  float distance = length(lightPos - fragPos);
-  float attenuation = 1.0 / (1.0 + 0.09 * distance + 0.032 * distance * distance);
-  intensity = max(dot(normal, lightDir), 0.0) * attenuation;
-  vec3 resultColor = light.color.rgb * light.color.a * intensity;
-
-  outColor = vec4(texColor.rgb * resultColor, texColor.a);
-
-  //for (int i = 0; i < lightCount; ++i) {
-  //    GPULight light = lights[i];
-  //    vec3  lightDir;
-  //    float intensity = 0.0;
-  //     if (light.position.w == 0.0) {
-  //         lightDir =  normalize(vec3(light.position));
-  //         intensity = max(dot(normal, -lightDir), 0.0);
-  //     }
-  //    if (light.position.w == 1.0) {
-  //        lightDir = normalize(lightPos - fragPos);
-  //        float distance = length(lightPos - fragPos);
-  //        float attenuation = 1.0 / (1.0 + 0.09 * distance + 0.032 * distance * distance);
-  //        intensity = max(dot(normal, lightDir), 0.0) * attenuation;
-  //    }
-  //    resultColor += light.color.rgb * light.color.a * intensity;
-  //}
-  //vec4 texColor = texture(myTexture, fragTexCoord); // 💡 텍스처 샘플링
-  //outColor = vec4(resultColor * texColor.rgb, texColor.a); // 💡 조명 * 텍스처 색
-}
-
-
-/*
-#version 450
-layout(location = 0) in  vec2 fragTexCoord; //2d texture
 layout(location = 0) out vec4 outColor;
 
+layout(set = 1, binding = 0) uniform sampler2D bindlessTexture[];
 
-void main() {
+layout(push_constant) uniform PushConstants {
+    mat4 model;
+    vec4 color;
+    vec3 camPos;
+    int albedoIndex;
+    int normalTextureIndex;
+    int metalicTextureIndex;
+    vec3 emissiveColor;
+    float metalic;
+    float roughness;
+    float ao;
+    float normalScale;
+    float alpha;
+} mat;
+
+layout(std140, set = 0, binding = 1) uniform LightBuffer {
+    GPULight lights[16];
+    int lightCount;
+};
+
+
+vec3 getNormal() {
+    vec3 N = normalize(normal);
+    if (mat.normalTextureIndex < 0) return N;
+    vec3 n = texture(bindlessTexture[mat.normalTextureIndex], texCoord).rgb;
+    n = n * 2.0 - 1.0;
+    vec3 T = normalize(TBN[0]); // tangent column
+    vec3 B = normalize(TBN[1]); // bitangent column
+    vec3 N_tbn = normalize(TBN[2]); // normal column
+    mat3 tbnMatrix = mat3(T, B, N_tbn);
+    return normalize(tbnMatrix * n * mat.normalScale);
+}
+
+vec3 PBRLighting(vec3 albedo, float metallic, float roughness, float ao, vec3 N, vec3 V) {
+    vec3 Lo = vec3(0.0);
 
     for (int i = 0; i < lightCount; ++i) {
         GPULight light = lights[i];
-        vec3 lightDir;
-        float intensity = 0.0;
+        vec3 L;
+        float attenuation = 1.0;
+
         if (light.position.w == 0.0) {
-            // Directional Light
-            lightDir =  normalize(vec3(light.position)); // 방향
-            intensity = max(dot(normal, -lightDir), 0.0);
-        }
-        else if (light.position.w == 1.0) {
-            // Point Light
+            // Directional light
+            L = normalize(-vec3(light.position));
+        } else {
+            // Point/Spot
             vec3 lightPos = vec3(light.position);
-            lightDir = normalize(lightPos - fragPos);
+            L = normalize(lightPos - fragPos);
             float distance = length(lightPos - fragPos);
-            float attenuation = 1.0 / (1.0 + 0.09 * distance + 0.032 * distance * distance);
-            intensity = max(dot(normal, lightDir), 0.0) * attenuation;
+            attenuation = 1.0 / (1.0 + 0.09 * distance + 0.032 * distance * distance);
+
+            if (light.position.w == 2.0) {
+                // Spot light
+                float theta = dot(L, normalize(-vec3(light.direction)));
+                float innerCutoff = cos(light.coneAngles.x);
+                float outerCutoff = cos(light.coneAngles.y);
+                float epsilon = innerCutoff - outerCutoff;
+                float spotFactor = clamp((theta - outerCutoff) / epsilon, 0.0, 1.0);
+                attenuation *= spotFactor;
+            }
         }
-        else if (light.position.w == 2.0) {
-            // Spot Light
-            vec3 lightPos = vec3(light.position);
-            lightDir = normalize(lightPos - fragPos);
-            float theta = dot(lightDir, normalize(-vec3(light.direction)));
-            float cutoff = cos(radians(light.innerCone));
-            float outerCutoff = cos(radians(light.outerCone));
-            float epsilon = cutoff - outerCutoff;
-            float spotFactor = clamp((theta - outerCutoff) / epsilon, 0.0, 1.0);
-            float distance = length(lightPos - fragPos);
-            float attenuation = 1.0 / (1.0 + 0.09 * distance + 0.032 * distance * distance);
-            intensity = max(dot(normal, lightDir), 0.0) * attenuation * spotFactor;
-        }
-        resultColor += light.color.rgb * intensity;
+
+        vec3 H = normalize(V + L);
+        float NdotL = max(dot(N, L), 0.0);
+        float NdotV = max(dot(N, V), 0.0);
+        float NdotH = max(dot(N, H), 0.0);
+        float VdotH = max(dot(V, H), 0.0);
+
+        vec3 F0 = mix(vec3(0.04), albedo, metallic);
+        vec3 F = F0 + (1.0 - F0) * pow(1.0 - VdotH, 5.0);
+
+        float alpha = roughness * roughness;
+        float alpha2 = alpha * alpha;
+        float denom = (NdotH * NdotH) * (alpha2 - 1.0) + 1.0;
+        float D = alpha2 / (3.141592 * denom * denom);
+
+        float k = alpha / 2.0;
+        float G_V = NdotV / (NdotV * (1.0 - k) + k);
+        float G_L = NdotL / (NdotL * (1.0 - k) + k);
+        float G = G_V * G_L;
+
+        vec3 specular = (D * G * F) / max(4.0 * NdotV * NdotL, 0.001);
+        vec3 kD = (1.0 - F) * (1.0 - metallic);
+        vec3 diffuse = kD * albedo / 3.141592;
+
+        Lo += (diffuse + specular) * light.color.rgb * light.color.a * NdotL * attenuation;
     }
-    outColor = vec4(resultColor, 1.0);
+
+    vec3 ambient = albedo * ao;
+    return Lo + ambient;
 }
-*/
+
+void main() {
+    vec3 N = getNormal();
+    vec3 V = normalize(camPosIn - fragPos);
+
+    vec3 albedo = mat.color.rgb;
+    if (mat.albedoIndex >= 0)
+        albedo *= texture(bindlessTexture[mat.albedoIndex], texCoord).rgb;
+
+    float metallic = mat.metalic;
+    if (mat.metalicTextureIndex >= 0)
+        metallic *= texture(bindlessTexture[mat.metalicTextureIndex], texCoord).r;
+
+    float roughness = mat.roughness;
+    float ao = mat.ao;
+
+    vec3 color = PBRLighting(albedo, metallic, roughness, ao, N, V);
+    color += mat.emissiveColor;
+
+    color = pow(color, vec3(1.0 / 2.2));
+
+    outColor = vec4(color, mat.alpha);
+}

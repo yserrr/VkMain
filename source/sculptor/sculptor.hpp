@@ -12,20 +12,21 @@
 #include <mesh_sub.hpp>
 #include <camera_cfg.hpp>
 #include "brush.hpp"
-#include "dyn_mesh.hpp"
-
+#include "model.hpp"
+#include "../model/mesh.hpp"
 
 struct ZBuffer{
   std::vector<float> depth;
-  std::unordered_map<uint32_t,uint32_t> indices;
+  std::unordered_map<uint32_t, uint32_t> indices;
 };
 
-class Painter{};
+class Painting{};
 
-class Sculptor : Painter{
+class Sculptor : Painting{
   friend class Engine;
   friend class UIRenderer;
   friend class EventManager;
+  friend class SculptorMode;
 
 public:
   Sculptor()  = default;
@@ -40,22 +41,23 @@ public:
                             float &u,
                             float &v);
   uint64_t sculptMidPoint(uint32_t i0, uint32_t i1);
-  uint64_t getCash(uint32_t a, uint32_t b);
+  uint64_t getVertexCash(uint32_t a, uint32_t b);
+  void rotate(float dYawDeg, float dPitDeg);
   bool castRayToMesh(const glm::vec3 &rayOrig, const glm::vec3 &rayDir);
   void subdivideMesh();
 
 private:
   std::unordered_map<uint64_t, uint32_t> midpointCache;
-  bool isDynamic= true;
-  bool dirty_   = false;
-  bool hitAny   = false;
-  float hit_t   = FLT_MAX;
-  int hitTriIdx = -1;
+  bool isDynamic     = true;
+  bool dirty_        = false;
+  bool hitAny        = false;
+  float hit_t        = FLT_MAX;
+  int hitTriangleIdx = -1;
   Brush brush{
   5.0,
   0.3
   };
-  DynMesh *mesh_;
+  Model* model;
 };
 
 #endif //MYPROJECT_SCULPTOR_HPP

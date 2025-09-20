@@ -3,7 +3,7 @@
 
 #include  <common.hpp>
 #include  <importer.hpp>
-#include <../sculptor/dyn_mesh.hpp>
+#include <../model/mesh.hpp>
 #include  <renderer.hpp>
 #include  <ui_renderer.hpp>
 #include  <event_manager.hpp>
@@ -14,7 +14,7 @@ class Engine{
 public:
   Engine();
   ~Engine();
-  void initialize();
+  void init();
   void run();
 
 private:

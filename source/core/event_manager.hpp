@@ -1,7 +1,5 @@
 #ifndef INTERACTION_HPP
 #define INTERACTION_HPP
-#include<common.hpp>
-#include<camera.hpp>
 #include"renderer.hpp"
 #include "sculptor.hpp"
 #include "event_manager_mode.hpp"
@@ -11,9 +9,9 @@ class SwapchainManager;
 class EventManager{
   friend class Engine;
 public:
-  EventManager(GLFWwindow *window);
+  EventManager(GLFWwindow *window , Camera *mainCam, ResourceManager *resourceManager);
   void onKeyEvent(int key, int scancode, int action, int mods);
-  void setCamera(Camera *cam);
+  void syncWithCam(Camera *cam);
   void setSwapchain(SwapchainManager *swapchainP);
   bool isResized();
   bool isMultiView();
@@ -22,6 +20,7 @@ public:
   void getMouseEvent();
   void wheelUpdate();
   void setRenderer(SceneRenderer *renderer);
+  void createActor();
 
 private:
   static void keyCallbackWrapper(GLFWwindow *window, int key, int scancode, int action, int mods);
@@ -34,7 +33,8 @@ private:
   void getViewIndex(double w, double h);
 
 private:
-  CurrentActor actor_ = CurrentActor::Sculptor;
+  ActorMode currentActor_ = ActorMode::Sculptor;
+  std::unique_ptr<Actor> actor_;
   SwapchainManager *swapchain_;
   ResourceManager* resourcesManager_;
   SceneRenderer *renderer_;

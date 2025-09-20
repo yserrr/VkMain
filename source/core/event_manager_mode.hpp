@@ -1,61 +1,64 @@
 #ifndef MYPROJECT_EVENT_MANAGER_MODE_HPP
 #define MYPROJECT_EVENT_MANAGER_MODE_HPP
+#include "GLFW/glfw3.h"
+#include<common.hpp>
+#include<camera.hpp>
+#include <sculptor.hpp>
 
-enum class CurrentActor: uint32_t{
+enum class ActorMode: uint32_t{
   Sculptor,
   Editor,
   Renderer,
 };
 
-struct Ctrl{
+struct Actor{
+  Actor(Camera *camera, GLFWwindow *window) : mainCam(camera), window_(window) {};
+  Camera *mainCam;
   GLFWwindow *window_;
+  std::unique_ptr<Sculptor> sculptor;
+  float deltaX_     = 0.0;
+  float deltaY_     = 0.0;
+  float sensitivity = 0.01f;
   virtual void keyEvent(int key, int scancode, int action, int mods) = 0;
-  virtual void getKey() =0;;
+  virtual void cursorPosCallBack(float deltaX, float deltaY) = 0;
+  virtual void getKey() =0;
   virtual void getMouseEvent() =0;
 };
 
-struct FPSMode : Ctrl{
-  Camera *fpsCam;
+struct FPS : Actor{
+  FPS(Camera *camera, GLFWwindow *window) : Actor(camera, window) {};
   virtual void keyEvent(int key, int scancode, int action, int mods) override {}
   virtual void getMouseEvent() override {}
+
+  virtual void cursorPosCallBack(float deltaX, float deltaY) override
+  {
+    mainCam->rotate(-deltaX * sensitivity, -deltaY * sensitivity);
+    deltaX = 0;
+    deltaY = 0;
+  }
 
   virtual void getKey() override
   {
     if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS)
     {
-      fpsCam->moveForward();
+      mainCam->moveForward();
     }
     if (glfwGetKey(window_, GLFW_KEY_A) == GLFW_PRESS)
     {
-      fpsCam->moveLeft();
+      mainCam->moveLeft();
     }
     if (glfwGetKey(window_, GLFW_KEY_D) == GLFW_PRESS)
     {
-      fpsCam->moveRight();
+      mainCam->moveRight();
     }
     if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS)
     {
-      fpsCam->moveBackward();
+      mainCam->moveBackward();
     }
   }
 };
 
-struct SculpingMode : Ctrl{
-  Camera *mainCam;
-  Sculptor *sculptor_;
-  double lastX = 0.0;
-  double lastY = 0.0;
-  virtual void keyEvent(int key, int scancode, int action, int mods) override;
 
-  virtual void getKey() override
-  {
-    if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-    {
-      glfwGetCursorPos(window_, &lastX, &lastY);
-      Ray ray = mainCam->generateRay(lastX, lastY);
-      sculptor_->stroke(ray);
-    }
-  }
-};
+struct EditorMode : Actor{};
 
 #endif //MYPROJECT_EVENT_MANAGER_MODE_HPP

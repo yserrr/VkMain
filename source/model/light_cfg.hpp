@@ -8,7 +8,6 @@
 #include<glm/vec4.hpp>
 #include<glm/mat4x4.hpp>
 #include<vulkan/vulkan.h>
-#include<import_light.hpp>
 #include<vector>
 
 #ifndef MAX_LIGHTS

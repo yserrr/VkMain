@@ -117,16 +117,23 @@ void UIRenderer::drawToolBox(ImVec2 size)
         buf[0] = '\0';
       }
 
-      ImGui::BeginChild("ScrollRegion", ImVec2(0, 300), true);
+      ImGui::Text("Material Parameter");
+
+      if (ImGui::SliderFloat(" metallic: ", &resourceManager_->selectedModel.constant.metallic, 0, 1))
       {
-        if (ImGui::ColorPicker4("Pick Color",
-                                color,
-                                ImGuiColorEditFlags_NoPicker))
-        {
-          printf("Color changed: R=%.2f G=%.2f B=%.2f A=%.2f\n", color[0], color[1], color[2], color[3]);
-        }
+        spdlog::info("material pramater: {}", resourceManager_->selectedModel.constant.metallic);
       }
-      ImGui::EndChild();
+      ImGui::SliderFloat(" roughness: ", &resourceManager_->selectedModel.constant.roughness, 0, 1);
+      ImGui::SliderFloat(" ao: ", &resourceManager_->selectedModel.constant.ao, 0, 1);
+      ImGui::SliderFloat(" emission: ", &resourceManager_->selectedModel.constant.emission, 0, 1);
+      ImGui::SliderFloat(" normal scale : ", &resourceManager_->selectedModel.constant.normalScale, 0, 1);
+      ImGui::SliderFloat(" alpha cut off: ", &resourceManager_->selectedModel.constant.alphaCutoff, 0, 1);
+      if (ImGui::ColorPicker4("albedo",
+                              color,
+                              ImGuiColorEditFlags_NoPicker))
+      {
+        resourceManager_->selectedModel.constant.color = glm::vec4(color[0], color[1], color[2], color[3]);
+      }
     }
 
     ImGui::End();
@@ -137,35 +144,42 @@ void UIRenderer::drawToolBoxUnder(ImVec2 size)
 {
   ImVec2 dispSize = ImGui::GetIO().DisplaySize;
   ImGui::SetNextWindowPos(ImVec2(0, (dispSize.y / 6) * 5), ImGuiCond_Always);
-  ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
-  ImGui::SetNextWindowSize(ImVec2(dispSize.x - dispSize.x / 5, (dispSize.y / 6)), ImGuiCond_Always);
-  if (ImGui::Begin("system Log:",
+  ImGui::SetNextWindowSize(ImVec2(dispSize.x / 80, dispSize.x / 80), ImGuiCond_Once);
+  if (ImGui::Begin("log",
                    nullptr,
                    ImGuiWindowFlags_NoResize |
                    ImGuiWindowFlags_NoMove |
-                   ImGuiWindowFlags_NoScrollbar |
-                   ImGuiWindowFlags_NoCollapse))
+                   ImGuiWindowFlags_NoScrollbar))
   {
-    ImVec2 minPos(0, (dispSize.y / 6) * 5);
-    ImVec2 maxPos(dispSize.x - dispSize.x / 5, (dispSize.y / 6));
-    float lineSpacing = ImGui::GetTextLineHeightWithSpacing();
-    ImGui::SetNextWindowPos(ImVec2(10, (dispSize.y / 6) * 5));
-    ImGui::SetNextWindowSize(ImVec2(dispSize.x, dispSize.y - lineSpacing));
-    for (uint32_t i = 0; i < sink_->buffer_.size(); i++)
+    ImGui::SetNextWindowPos(ImVec2(dispSize.x / 80,
+                                   (dispSize.y / 6) * 5),
+                            ImGuiCond_Always);
+    ImGui::SetNextWindowCollapsed(true, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(dispSize.x - dispSize.x / 5
+                                    + dispSize.x / 80,
+                                    (dispSize.y / 6)),
+                             ImGuiCond_Always);
+    if (ImGui::Begin("system Log:",
+                     nullptr,
+                     ImGuiWindowFlags_NoResize |
+                     ImGuiWindowFlags_NoMove |
+                     ImGuiWindowFlags_NoCollapse))
     {
-      const std::string &line = sink_->buffer_[i];
-      ImGui::Text("%s", line.c_str());
+      ImVec2 minPos(0, (dispSize.y / 6) * 5);
+      ImVec2 maxPos(dispSize.x - dispSize.x / 5, (dispSize.y / 6));
+      float lineSpacing = ImGui::GetTextLineHeightWithSpacing();
+      ImGui::SetNextWindowPos(ImVec2(10, (dispSize.y / 6) * 5));
+      ImGui::SetNextWindowSize(ImVec2(dispSize.x, dispSize.y - lineSpacing));
+      static bool autoScroll = true;
+      for (uint32_t i = 0; i < sink_->buffer_.size(); i++)
+      {
+        const std::string &line = sink_->buffer_[i];
+        ImGui::Text("%s", line.c_str());
+        if (autoScroll && ImGui::GetScrollY() >= ImGui::GetScrollMaxY())
+          ImGui::SetScrollHereY(1.0f);
+      }
     }
-  }
-  ImGui::End();
-}
-
-void UIRenderer::colorPickerColor()
-{
-  ImGui::Begin("Color Picker");
-  if (ImGui::ColorEdit4("Pick Color", color))
-  {
-    printf("Color changed: R=%.2f G=%.2f B=%.2f A=%.2f\n", color[0], color[1], color[2], color[3]);
+    ImGui::End();
   }
   ImGui::End();
 }

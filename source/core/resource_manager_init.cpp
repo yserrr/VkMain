@@ -18,23 +18,18 @@ ResourceManager::ResourceManager(const ResourceManagerCreateInfo &info) :
   light.type      = 1;
   light.direction = glm::vec3(0, 0, 0);
   light.intensity = 0.2;
-  light.color     = glm::vec3(1, 0.7, 0.5);
+  light.color     = glm::vec3(0.3, 0.2, 0.5);
   lightManager->addLight(light);
-  Light light2;
-  light2.position  = glm::vec3(1.0, 1.0, 10.0);
-  light2.type      = 1;
-  light2.direction = glm::vec3(0, 0, 0);
-  light2.intensity = 0.6;
-  light.color      = glm::vec3(0, 0.7, 0.5);
-  lightManager->addLight(light2);
   lightManager->uploadData();
-
+  std::unique_ptr<Material> base = std::make_unique<Material>();
+  base->name = "base";
+  materials_[base->name] = std::move(base);
   spdlog::info("add lights");
   CamCI cam_ci{};
   cam_ci.fov         = glm::radians(350.0f);
   cam_ci.aspectRatio = 2400 / 1200;
-  cam_ci.nearPlane   = 0.1f;
-  cam_ci.farPlane    = 10000.0;
+  cam_ci.nearPlane   = 1.0;
+  cam_ci.farPlane    = 256.0;
   camera             = std::make_unique<Camera>(cam_ci);
 
   descriptorManager   = std::make_unique<DescriptorManager>(allocator_.getDevice());

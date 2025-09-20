@@ -1,10 +1,15 @@
 #include<event_manager.hpp>
+#include "sculptor_act.hpp"
+#include "imgui_impl_glfw.h"
 #include <imgui.h>
 
-EventManager::EventManager(GLFWwindow *window) :
-  window_(window)
+EventManager::EventManager(GLFWwindow *window, Camera *mainCam, ResourceManager *resourceManager) :
+  window_(window),
+  mainCam(mainCam),
+  resourcesManager_(resourceManager)
 {
-  glfwGetCursorPos(window_, &lastX,&lastY);
+  syncWithCam(mainCam);
+  glfwGetCursorPos(window_, &lastX, &lastY);
   glfwSetWindowUserPointer(window, this);
   glfwSetKeyCallback(window, keyCallbackWrapper);
   glfwSetCursorPosCallback(window, cursorPosCallbackWrapper);
@@ -12,8 +17,15 @@ EventManager::EventManager(GLFWwindow *window) :
   glfwMakeContextCurrent(window);
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
   glfwSetScrollCallback(window, scrollCallback);
+
+//  glfwSetKeyCallback(window, ImGui_ImplGlfw_KeyCallback);
+//  glfwSetCharCallback(window, ImGui_ImplGlfw_CharCallback);
+//  glfwSetMouseButtonCallback(window, ImGui_ImplGlfw_MouseButtonCallback);
+//  glfwSetScrollCallback(window, ImGui_ImplGlfw_ScrollCallback);
+//
   lastActionTime = glfwGetTime();
   spdlog::info("interaction set up");
+  createActor();
 }
 
 void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
@@ -23,14 +35,13 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
   {
     return;
   }
-
+  actor_->keyEvent(key, scancode, action, mods);
   if (action == GLFW_PRESS)
   {
     if (key == GLFW_KEY_1)
     {
       renderer_->polygonMode = VK_POLYGON_MODE_FILL;
     }
-
     if (key == GLFW_KEY_2)
     {
       renderer_->polygonMode = VK_POLYGON_MODE_LINE;
@@ -39,41 +50,9 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
     {
       renderer_->depthTest = !renderer_->depthTest;
     }
-    if (key == GLFW_KEY_P)
-    {
-      //mainCam->addMoveSpeed(1.0f);
-    }
-    if (key == GLFW_KEY_O)
-    {
-      //mainCam->(-1.0f);
-    }
-    if (key == GLFW_KEY_D)
-    {
-      mainCam->moveRight();
-    }
-    if (key == GLFW_KEY_D || key == GLFW_KEY_LEFT_CONTROL)
-    {
-      if (actor_ == CurrentActor::Sculptor)
-      {
-        sculptor_.subdivideMesh();
-      }
-    }
-    if (key == GLFW_KEY_A)
-    {
-      mainCam->moveLeft();
-    }
     if (key == GLFW_KEY_Q)
     {
       glfwSetWindowShouldClose(window_, GLFW_TRUE);
-    }
-
-    if (glfwGetKey(window_, GLFW_KEY_F) == GLFW_PRESS)
-    {
-      glm::quat quat{};
-      mainCam->setPosition(glm::vec3(0.0f, 0.0f, 30.0f));
-      mainCam->setDirection(glm::vec3(0.0f, 0.0f, -1.0f));
-      mainCam->orientation_ = quat;
-      mainCam->camUpdate();
     }
     if (key == GLFW_KEY_SPACE)
     {
@@ -102,12 +81,18 @@ void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
   }
 }
 
-void EventManager::setCamera(Camera *cam)
+void EventManager::syncWithCam(Camera *cam)
 {
-  mainCam = cam;
-  glfwGetCursorPos(window_, &lastX, &lastY);
+  glm::quat quat{};
+  mainCam->pos_         = glm::vec3(0.0f, 0.0f, 30.0f);
+  mainCam->dir_         = glm::vec3(0.0f, 0.0f, -1.0f);
+  mainCam->orientation_ = quat;
+  mainCam->camUpdate();
+  lastX = 0;
+  lastY = 0;
 
-  mainCam->addQuaterian(lastX, lastY);
+  glfwGetCursorPos(window_, &lastX, &lastY);
+  mainCam->rotate(lastX, lastY);
   mainCam->currentExtent = currentExtent;
 }
 
@@ -116,109 +101,6 @@ void EventManager::setSwapchain(SwapchainManager *swapchainP)
   ///currentExtent.height = swapchainP->getExtent().height;
   ///currentExtent.width  = swapchainP->getExtent().width;
   ///swapchain_= swapchainP;
-}
-
-void EventManager::mouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
-{
-  ImGuiIO &io = ImGui::GetIO();
-  if (button >= 0 && button < 3)
-  {
-    io.MouseDown[button] = (action == GLFW_PRESS);
-  }
-
-  if (io.WantCaptureMouse)
-  {
-    return;
-  }
-
-  if (button == GLFW_MOUSE_BUTTON_LEFT)
-  {
-    if (action == GLFW_PRESS)
-    {
-      leftMousePressed = true;
-      glfwGetCursorPos(window, &lastX, &lastY);
-      Ray ray = mainCam->generateRay(lastX, lastY);
-
-      switch (actor_)
-      {
-        case (CurrentActor::Sculptor):
-        {
-          //sculptor_.stroke(ray);
-          break;
-        }
-        case (CurrentActor::Editor):
-        {
-          break ;
-        }
-        default:
-        {
-          break;
-        }
-      }
-    } else if (action == GLFW_RELEASE)
-    {
-      leftMousePressed = false;
-    }
-  }
-}
-
-void EventManager::cursorPosCallback(GLFWwindow *window, double xpos, double ypos)
-{
-  float deltaX = static_cast<float>(xpos - lastX);
-  float deltaY = static_cast<float>(ypos - lastY);
-  lastX        = xpos;
-  lastY        = ypos;
-  if (!mouseMoveState) return;
-  ImGuiIO &io = ImGui::GetIO();
-  if (io.WantCaptureMouse | moved)
-  {
-    return;
-  }
-  EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
-  if (self && self->mainCam)
-  {
-    self->mainCam->addQuaterian(-deltaX * sensitivity, -deltaY * sensitivity);
-    moved = true;
-  }
-}
-
-void EventManager::scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
-{
-  ImGuiIO &io = ImGui::GetIO();
-  if (io.WantCaptureMouse)
-  {
-    return;
-  }
-  EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
-  self->wheelDelta_ += yoffset;
-}
-
-void EventManager::getViewIndex(double w, double h)
-{
-  ImGuiIO &io = ImGui::GetIO();
-  if (io.WantCaptureMouse)
-  {
-    return;
-  }
-  bool right = w >= (currentExtent.width / 2.0f);
-  bool top   = h >= (currentExtent.height / 2.0f);
-  int index  = 0;
-  if (!right && !top) index = 0;
-  else if (right && !top) index = 1;
-  else if (!right && top) index = 2;
-  else if (right && top) index = 3;
-  //mainCam->setMainCam(index);
-}
-
-void EventManager::wheelUpdate()
-{
-  mainCam->addFov(wheelDelta_);
-  wheelDelta_ = 0.0f;
-}
-
-void EventManager::setRenderer(SceneRenderer *renderer)
-{
-  renderer_ = renderer;
 }
 
 bool EventManager::isResized()
@@ -241,8 +123,66 @@ VkExtent2D EventManager::getExtent()
   return currentExtent;
 }
 
+void EventManager::getKey()
+{
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.WantCaptureMouse)
+  {
+    return;
+  }
+  actor_->getKey();
+}
+
+void EventManager::getMouseEvent()
+{
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.WantCaptureMouse)
+  {
+    return;
+  }
+  actor_->getMouseEvent();
+}
+
+void EventManager::wheelUpdate()
+{
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.WantCaptureMouse)
+  {
+    return;
+  }
+  mainCam->addFov(wheelDelta_);
+  wheelDelta_ = 0.0f;
+}
+
+void EventManager::setRenderer(SceneRenderer *renderer)
+{
+  renderer_ = renderer;
+}
+
+void EventManager::createActor()
+{
+  switch (currentActor_)
+  {
+    case(ActorMode::Sculptor):
+    {
+      actor_                  = std::make_unique<SculptorMode>(mainCam, window_);
+      actor_->sculptor->model = &resourcesManager_->selectedModel;
+      break;
+    }
+    default:
+    {
+      break;
+    }
+  }
+}
+
 void EventManager::keyCallbackWrapper(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
+  ImGuiIO &io = ImGui::GetIO();
+  if (io.WantCaptureMouse)
+  {
+    return;
+  }
   EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
   if (self)
   {
@@ -293,42 +233,59 @@ void EventManager::framebufferSizeCallback(GLFWwindow *window, int w, int h)
   }
 }
 
-void EventManager::getKey()
+void EventManager::scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
   ImGuiIO &io = ImGui::GetIO();
   if (io.WantCaptureMouse)
   {
     return;
   }
-  if (glfwGetKey(window_, GLFW_KEY_W) == GLFW_PRESS)
+  EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
+  self->wheelDelta_ += yoffset;
+}
+
+void EventManager::mouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
+{
+  ImGuiIO &io          = ImGui::GetIO();
+  io.MouseDown[button] = true;
+  if (io.WantCaptureMouse)
   {
-    mainCam->moveForward();
-  }
-  if (glfwGetKey(window_, GLFW_KEY_A) == GLFW_PRESS)
-  {
-    mainCam->moveLeft();
-  }
-  if (glfwGetKey(window_, GLFW_KEY_D) == GLFW_PRESS)
-  {
-    mainCam->moveRight();
-  }
-  if (glfwGetKey(window_, GLFW_KEY_S) == GLFW_PRESS)
-  {
-    mainCam->moveBackward();
+    return;
   }
 }
 
-void EventManager::getMouseEvent()
+void EventManager::cursorPosCallback(GLFWwindow *window, double xpos, double ypos)
+{
+  float deltaX = static_cast<float>(xpos - lastX);
+  float deltaY = static_cast<float>(ypos - lastY);
+  lastX        = xpos;
+  lastY        = ypos;
+  if (!mouseMoveState) return;
+  ImGuiIO &io   = ImGui::GetIO();
+  io.MousePos.x = static_cast<float>(xpos);
+  io.MousePos.y = static_cast<float>(ypos);
+  if (io.WantCaptureMouse | moved)
+  {
+    return;
+  }
+  EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
+  actor_->cursorPosCallBack(deltaX, deltaY);
+  moved = true;
+}
+
+void EventManager::getViewIndex(double w, double h)
 {
   ImGuiIO &io = ImGui::GetIO();
   if (io.WantCaptureMouse)
   {
     return;
   }
-  if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
-  {
-    glfwGetCursorPos(window_, &lastX, &lastY);
-    Ray ray = mainCam->generateRay(lastX, lastY);
-    sculptor_.stroke(ray);
-  }
+  bool right = w >= (currentExtent.width / 2.0f);
+  bool top   = h >= (currentExtent.height / 2.0f);
+  int index  = 0;
+  if (!right && !top) index = 0;
+  else if (right && !top) index = 1;
+  else if (!right && top) index = 2;
+  else if (right && top) index = 3;
+  //mainCam->setMainCam(index);
 }

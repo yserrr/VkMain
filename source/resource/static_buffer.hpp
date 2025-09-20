@@ -33,7 +33,6 @@ private:
   Allocation allocation;
   VkDeviceSize bufferSize;
   BufferType type;
-
   bool stage(BufferType type);
 
   VkBufferUsageFlags getUsageFlags(BufferType type);

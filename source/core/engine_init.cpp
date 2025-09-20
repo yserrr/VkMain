@@ -1,9 +1,8 @@
 #include<engine.hpp>
 
-void Engine::initialize()
+void Engine::init()
 {
-  allocator     = std::make_unique<MemoryAllocator>(physical_device_h, device_h);
-  eventManager_ = std::make_unique<EventManager>(window_h);
+  allocator = std::make_unique<MemoryAllocator>(physical_device_h, device_h);
   SwapchainCreateInfo swapchainInfo{};
   swapchainInfo.device         = device_h;
   swapchainInfo.physicalDevice = physical_device_h;
@@ -18,7 +17,6 @@ void Engine::initialize()
   frameCount                   = swapchain->getImages().size();
   renderPassInfos.resize(frameCount);
   spdlog::info("create swapchain");
-  eventManager_->currentExtent = swapchain->getExtent();
   ViewManagerCreateInfo imageManagerInfo{};
   imageManagerInfo.device    = device_h;
   imageManagerInfo.images    = &(swapchain->getImages());
@@ -72,8 +70,9 @@ void Engine::initialize()
   resource_manager_create_info.device    = device_h;
   resource_manager_create_info.allocator = allocator.get();
 
-  resourceManager_ = std::make_unique<ResourceManager>(resource_manager_create_info);
-  resourceManager_->setTexture();
+  resourceManager_                 = std::make_unique<ResourceManager>(resource_manager_create_info);
+  Camera *cam                      = resourceManager_->getCamera();
+
 
   spdlog::info("init renderer");
   RendererCreateInfo renderinfo{};
@@ -85,6 +84,7 @@ void Engine::initialize()
   renderinfo.swapchain    = swapchain.get();
   renderinfo.imageManager = imageManager.get();
   renderinfo.renderPass   = renderpass_h;
+
   sceneRenderer           = std::make_unique<SceneRenderer>(renderinfo);
   sceneRenderer->createPipeline((resourceManager_->descriptorManager->getLayouts()));
 
@@ -101,13 +101,7 @@ void Engine::initialize()
   UIinfo.graphics_q        = graphics_q;
   uiRenderer               = std::make_unique<UIRenderer>(UIinfo);
   uiRenderer->setResourceManager(resourceManager_.get());
-
-  Camera *cam = resourceManager_->getCamera();
   sceneRenderer->setCamera(cam);
-  eventManager_->setCamera(cam);
-  eventManager_->resourcesManager_ = resourceManager_.get();
 
   resourceManager_->uploadDescriptors();
-
-  eventManager_->setRenderer(sceneRenderer.get());
 }

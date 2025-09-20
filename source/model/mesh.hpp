@@ -1,9 +1,9 @@
-// Mesh.hpp
 #ifndef MESH_HPP
 #define MESH_HPP
-
 #include <../model/vertex.hpp>
 #include <static_buffer.hpp>
+
+#include "material.hpp"
 #include "push_constant.hpp"
 
 // tool box mesh -> simple
@@ -12,11 +12,11 @@
 /// dynamic mesh:
 /// sub device -> allocate need to setting with dencity
 /// must setting
-struct DynMesh{
-  DynMesh(const std::vector<VertexAll> &vertices,
+struct Mesh{
+  Mesh(const std::vector<VertexAll> &vertices,
        const std::vector<uint32_t> &indices,
        MemoryAllocator &allocator);
-  ~DynMesh();
+  ~Mesh();
   void dynMeshUpdate(VkCommandBuffer commandBuffer);
   void copyBuffer(VkCommandBuffer commandBuffer) const;
   void bind(VkCommandBuffer commandBuffer);
@@ -30,7 +30,6 @@ struct DynMesh{
   std::unique_ptr<StaticBuffer> indexBuffer;
   std::vector<VertexAll> vertices;
   std::vector<uint32_t> indices;
-  MeshConstant constant_;
   MemoryAllocator &allocator;
   VkDeviceSize vertexSize;
   VkDeviceSize indiceSize;
