@@ -1,11 +1,13 @@
 #define   STB_IMAGE_IMPLEMENTATION 
 #include <engine.hpp>
 #include <spdlog/spdlog.h>
+#include "ui_renderer.hpp"
+#include "log_sink.hpp"
 
 void Engine::run()
 {
   UIsink = std::make_shared<UILogSink>();
-  //spdlog::set_default_logger(std::make_shared<spdlog::logger>("default", UIsink));
+  spdlog::set_default_logger(std::make_shared<spdlog::logger>("default", UIsink));
   spdlog::set_level(spdlog::level::trace);
   vkDeviceload();
   init();
@@ -13,7 +15,10 @@ void Engine::run()
   setUp();
   Camera *cam = resourceManager_->getCamera();
   sceneRenderer->setCamera(cam);
-  eventManager_                    = std::make_unique<EventManager>(window_h, cam, resourceManager_.get());
+  eventManager_                    = std::make_unique<EventManager>(window_h,
+    cam,
+    resourceManager_.get(),
+    swapchain->getExtent());
   eventManager_->resourcesManager_ = resourceManager_.get();
   eventManager_->currentExtent     = swapchain->getExtent();
   eventManager_->setRenderer(sceneRenderer.get());
@@ -48,10 +53,9 @@ void Engine::run()
         uiRenderer->callStack_.pop_back();
       }
     }
-    if (eventManager_->sculptor_.dirty_)
+    if (eventManager_->actor_->shoudAct)
     {
-      //eventManager_->sculptor_(command);
-      eventManager_->sculptor_.dirty_ = false;
+      eventManager_->actor_->act(command);
     }
     vkCmdBindDescriptorSets(command,
                             VK_PIPELINE_BIND_POINT_GRAPHICS,
@@ -122,7 +126,7 @@ void Engine::setUp()
 
 VkCommandBuffer Engine::rec(uint32_t imageIndex)
 {
-  clearValues[0].color                          = {0.01f, 0.01f, 0.01f, 1.0f};
+  clearValues[0].color                          = {0.1f, 0.1f, 0.1f, 1.0f};
   clearValues[1].depthStencil                   = {1.0f, 0}; // 깊이 초기화 값
   renderPassInfos[imageIndex].sType             = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   renderPassInfos[imageIndex].renderPass        = renderpass_h;

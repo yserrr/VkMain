@@ -11,6 +11,7 @@ const bool ENABLE_VALIDATION_LAYERS = false;
 const bool ENABLE_VALIDATION_LAYERS = true;
 #endif
 
+
 struct InstanceCreateInfo{
   std::string applicationName = "myEngine";
   uint32_t applicationVersion = VK_MAKE_VERSION(1, 0, 0);

@@ -51,7 +51,8 @@ public:
   void drawcall(VkCommandBuffer command);
   void drawTransition(VkCommandBuffer command);
   void drawStateWindow(ImVec2 size);
-  void drawToolBox(ImVec2 size);
+  void drawToolBoxRight(ImVec2 size);
+  void drawToolBoxLeft(ImVec2 size);
   void drawToolBoxUnder(ImVec2 size);
   void drawVertexState(ImVec2 size);
   void drawIndexState(ImVec2 size);

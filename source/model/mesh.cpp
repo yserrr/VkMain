@@ -8,8 +8,8 @@ Mesh::Mesh(const std::vector<VertexAll> &vertices,
 {
   recenterMesh();
   reNomalCompute();
-  vertexSize      = (sizeof(vertices[0])) * vertices.size()*2;
-  indiceSize      = sizeof(indices[0]) * indices.size()*2 ;
+  vertexSize      = (sizeof(vertices[0])) * vertices.size();
+  indiceSize      = sizeof(indices[0]) * indices.size();
   vertexBuffer    = std::make_unique<StaticBuffer>(allocator, vertexSize, BufferType::VERTEX);
   indexBuffer     = std::make_unique<StaticBuffer>(allocator, indiceSize, BufferType::INDEX);
   vertexBuffer->getStagingBuffer(vertices.data());

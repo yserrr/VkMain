@@ -603,7 +603,7 @@ Mesh ImporterEx::loadModel(const char *filepath, MemoryAllocator &allocator)
       }
     }
   }
-  spdlog::info("모델 로드 성공");
+  spdlog::info("import models");
   return Mesh(vertices, indices, allocator);
 }
 

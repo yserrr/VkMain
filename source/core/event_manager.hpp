@@ -3,13 +3,15 @@
 #include"renderer.hpp"
 #include "sculptor.hpp"
 #include "event_manager_mode.hpp"
+#include "imgui.h"
 
 class SwapchainManager;
 
 class EventManager{
   friend class Engine;
 public:
-  EventManager(GLFWwindow *window , Camera *mainCam, ResourceManager *resourceManager);
+  ImGuiKey glfwToImgui(int key);
+  EventManager(GLFWwindow *window , Camera *mainCam, ResourceManager *resourceManager,VkExtent2D extent);
   void onKeyEvent(int key, int scancode, int action, int mods);
   void syncWithCam(Camera *cam);
   void setSwapchain(SwapchainManager *swapchainP);
@@ -20,7 +22,7 @@ public:
   void getMouseEvent();
   void wheelUpdate();
   void setRenderer(SceneRenderer *renderer);
-  void createActor();
+  void selectActor();
 
 private:
   static void keyCallbackWrapper(GLFWwindow *window, int key, int scancode, int action, int mods);
@@ -28,7 +30,7 @@ private:
   static void cursorPosCallbackWrapper(GLFWwindow *window, double xpos, double ypos);
   static void framebufferSizeCallback(GLFWwindow *window, int w, int h);
   static void scrollCallback(GLFWwindow *window, double xoffset, double yoffset);
-  void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
+  void onMouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
   void cursorPosCallback(GLFWwindow *window, double xpos, double ypos);
   void getViewIndex(double w, double h);
 
@@ -40,7 +42,6 @@ private:
   SceneRenderer *renderer_;
   GLFWwindow *window_;
   Camera *mainCam;
-  Sculptor sculptor_;
   bool altPressed= false ;
   bool leftButton = false;
   bool middleButton = false;

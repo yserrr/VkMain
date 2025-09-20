@@ -1,21 +1,44 @@
 #include "sculptor_act.hpp"
+#include "glm/gtx/quaternion.hpp"
 
-SculptorMode::SculptorMode(Camera *camera, GLFWwindow *window) : Actor(camera, window)
+constexpr float MODEL_VIEW_TRANSLATE  = 0.01f;
+constexpr float MODEL_DEPTH_TRANSLATE = 2.0f;
+constexpr float MODEL_SCALING         = 0.01;
+
+/// sculptor don't use camera
+/// fixed cam mode
+
+SculptorMode::SculptorMode(GLFWwindow *window, Model *model, VkExtent2D extent) :
+  Actor(window),
+  extent(extent)
 {
-  sculptor = std::make_unique<Sculptor>();
+  sculptingModel = model;
+  sculptor       = std::make_unique<Sculptor>(model);
 }
 
 void SculptorMode::keyEvent(int key, int scancode, int action, int mods)
 {
-  if (key == GLFW_KEY_D || key == GLFW_KEY_LEFT_CONTROL)
+  if (key == GLFW_KEY_D and key == GLFW_KEY_LEFT_CONTROL)
   {
     sculptor->subdivideMesh();
   }
   if (key == GLFW_KEY_F)
   {
-    mainCam->lookAt(glm::vec3(0));
-    spdlog::info ("camera direciton :: {} {} {}", mainCam->dir_.x , mainCam->dir_.y, mainCam->dir_.z);
+    sculptingModel->transform.position   = glm::vec3(0, 0, 0);
+    sculptingModel->constant.modelMatrix = sculptingModel->transform.getMatrix();
   }
+}
+
+void SculptorMode::getWheelUpdate(float deltaS)
+{
+  sculptingModel->transform.position -= deltaS * MODEL_DEPTH_TRANSLATE * glm::vec3(0, 0, -1);
+  sculptingModel->constant.modelMatrix = sculptingModel->transform.getMatrix();
+}
+
+void SculptorMode::act(VkCommandBuffer command)
+{
+  sculptingModel->mesh->dynMeshUpdate(command);
+  shoudAct = false;
 }
 
 void SculptorMode::cursorPosCallBack(float deltaX, float deltaY)
@@ -30,37 +53,57 @@ void SculptorMode::getMouseEvent()
 {
   if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
   {
-    if (glfwGetKey(window_, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    if ((glfwGetKey(window_, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS))
     {
-      mainCam ->rotate(deltaX_ *0.01, deltaY_ *0.01);
-      deltaX_ = 0;
-      deltaY_ = 0;
-    } else
-    {
-      double x, y;
-      glfwGetCursorPos(window_, &x, &y);
-      Ray ray = mainCam->generateRay(x, y);
-      sculptor->stroke(ray);
-      deltaX_ = 0;
-      deltaY_ = 0;
+      glm::quat modelRotate   = sculptingModel->transform.rotation;
+      glm::quat pitchRotation = glm::angleAxis(glm::radians(deltaY_), glm::vec3(1.0, 0.0, 0.0));
+      glm::quat yawRotation   = glm::angleAxis(glm::radians(deltaX_), glm::vec3(0, 1, 0));
+      modelRotate             = yawRotation * pitchRotation * modelRotate;
+      modelRotate             = glm::normalize(modelRotate);
+
+      sculptingModel->transform.rotation   = modelRotate;
+      sculptingModel->constant.modelMatrix = sculptingModel->transform.getMatrix();
+      deltaX_                              = 0;
+      deltaY_                              = 0;
       return;
     }
-  }
-   if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
-   {
-     mainCam->pos_ -= deltaX_ * sensitivity * mainCam->right_
-                    - deltaY_ * sensitivity * mainCam->up_;
-     deltaX_ = 0;
-     deltaY_ = 0;
-     return;
-   }
-  if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-  {
-    mainCam->pos_.z += 0.05f* deltaY_;
+    double x, y;
+    glfwGetCursorPos(window_, &x, &y);
+
+    float fragX = (x / extent.width - 0.5) * 2;
+    float fragY = (y / extent.height - 0.5) * 2;
+    glm::vec3 fragDirection(fragX, fragY, -1);
+    fragDirection = glm::normalize(fragDirection);
+    glm::mat4 modelMat = sculptingModel->constant.modelMatrix;
+    modelMat = glm::inverse(modelMat);
+
+    glm::vec4 direction = glm::vec4(fragDirection, 0.0)* modelMat;
+    if (sculptor->stroke( direction))
+    {
+      shoudAct =true;
+    }
     deltaX_ = 0;
     deltaY_ = 0;
     return;
   }
-  deltaX_ = 0;
-  deltaY_ = 0;
+  if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS)
+  {
+    sculptingModel->transform.position +=
+    deltaX_ * MODEL_VIEW_TRANSLATE * glm::vec3(1, 0, 0) -
+    deltaY_ * MODEL_VIEW_TRANSLATE * glm::vec3(0, 1, 0);
+    sculptingModel->constant.modelMatrix = sculptingModel->transform.getMatrix();
+
+    deltaX_ = 0;
+    deltaY_ = 0;
+    return;
+  }
+
+  if (glfwGetMouseButton(window_, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+  {
+    sculptingModel->transform.scale += deltaX_ * MODEL_SCALING;
+    sculptingModel->constant.modelMatrix = sculptingModel->transform.getMatrix();
+    deltaX_                              = 0;
+    deltaY_                              = 0;
+    return;
+  }
 }

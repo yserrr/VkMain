@@ -2,14 +2,17 @@
 #include "spdlog/details/os.h"
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+constexpr float THREAD_HOLD = 1e-6f;
 
-void Sculptor::stroke(Ray ray)
+Sculptor::Sculptor(Model *model) : mesh(model->mesh) {}
+
+bool Sculptor::stroke(glm::vec3 strokeDir)
 {
-  spdlog::info("[Sculptor] gen ray direction: {} {} {}", ray.direction.x, ray.direction.y, ray.direction.z);
-  if (castRayToMesh(ray.origin, ray.direction))
+  spdlog::debug("[Sculptor] gen ray direction: {} {} {}", strokeDir.x, strokeDir.y, strokeDir.z);
+  if (castRayToMesh( strokeDir))
   {
-    glm::vec3 hitPoint = hit_t * ray.direction + ray.origin;
-    for (auto &v: model->mesh->vertices)
+    glm::vec3 hitPoint = hit_t * strokeDir;
+    for (auto &v: mesh->vertices)
     {
       float dist = glm::distance(hitPoint, v.position);
       if (dist < brush.radius)
@@ -18,19 +21,18 @@ void Sculptor::stroke(Ray ray)
         //VertexAll vertex{};
         //vertex.position = (hitPoint + v.position) / 2.0f;
         //vertex.normal =
-        //model->mesh->indices.push_back()
+        //mesh->indices.push_back()
         float falloff = 1.0f - (dist / brush.radius);
         v.position += v.normal * brush.strength * falloff;
       }
     }
-    model->mesh->reNomalCompute();
-    dirty_ = true;
+    mesh->reNomalCompute();
+    return true;
   }
-  return;
+  return false;
 }
 
-bool Sculptor::RayIntersectTriangle(const glm::vec3 &orig,
-                                    const glm::vec3 &dir,
+bool Sculptor::RayIntersectTriangle(const glm::vec3 &dir,
                                     const glm::vec3 &v0,
                                     const glm::vec3 &v1,
                                     const glm::vec3 &v2,
@@ -38,17 +40,16 @@ bool Sculptor::RayIntersectTriangle(const glm::vec3 &orig,
                                     float &u,
                                     float &v)
 {
-  const float THREAD_HOLD = 1e-10f;
-
   glm::vec3 edge1 = v1 - v0;
   glm::vec3 edge2 = v2 - v0;
-  glm::vec3 h     = glm::cross(dir, edge2);
-  float a         = glm::dot(edge1, h);
+
+  glm::vec3 h = glm::cross(dir, edge2);
+  float a     = glm::dot(edge1, h);
 
   if (fabs(a) < THREAD_HOLD) return false;
 
   float f     = 1.0f / a;
-  glm::vec3 s = orig - v0;
+  glm::vec3 s = -v0;
 
   u = f * glm::dot(s, h);
   if (u < 0.0f or u > 1.0f) return false;
@@ -64,20 +65,19 @@ bool Sculptor::RayIntersectTriangle(const glm::vec3 &orig,
   return false;
 }
 
-bool Sculptor::castRayToMesh(const glm::vec3 &rayOrig, const glm::vec3 &rayDir)
+bool Sculptor::castRayToMesh(const glm::vec3 &rayDir)
 {
   hitAny         = false;
   hit_t          = FLT_MAX;
   hitTriangleIdx = -1;
   #pragma omp parallel for
-  for (size_t i = 0; i < model->mesh->indices.size(); i += 3)
+  for (size_t i = 0; i < mesh->indices.size(); i += 3)
   {
-    glm::vec3 v0 = model->mesh->vertices[model->mesh->indices[i]].position;
-    glm::vec3 v1 = model->mesh->vertices[model->mesh->indices[i + 1]].position;
-    glm::vec3 v2 = model->mesh->vertices[model->mesh->indices[i + 2]].position;
-
+    glm::vec3 v0 = mesh->vertices[mesh->indices[i]].position;
+    glm::vec3 v1 = mesh->vertices[mesh->indices[i + 1]].position;
+    glm::vec3 v2 = mesh->vertices[mesh->indices[i + 2]].position;
     float t, u, v;
-    if (RayIntersectTriangle(rayOrig, rayDir, v0, v1, v2, t, u, v))
+    if (RayIntersectTriangle(rayDir, v0, v1, v2, t, u, v))
     {
       if (t < hit_t)
       {
@@ -89,7 +89,7 @@ bool Sculptor::castRayToMesh(const glm::vec3 &rayOrig, const glm::vec3 &rayDir)
   }
   if (hitAny)
   {
-    std::cout << "[Sculptor] Hit triangle: {} , t: {}" << std::endl;
+    spdlog::info("[Sculptor] Hit triangle: {} , t: {}", hitTriangleIdx, hit_t);
   } else
   {
     spdlog::info("[Sculptor] No hit");
@@ -104,17 +104,17 @@ uint64_t Sculptor::sculptMidPoint(uint32_t i0, uint32_t i1)
   {
     return midpointCache[key];
   }
-  glm::vec3 p0 = model->mesh->vertices[i0].position;
-  glm::vec3 p1 = model->mesh->vertices[i1].position;
-  glm::vec3 n0 = model->mesh->vertices[i0].normal;
-  glm::vec3 n1 = model->mesh->vertices[i1].normal;
+  glm::vec3 p0 = mesh->vertices[i0].position;
+  glm::vec3 p1 = mesh->vertices[i1].position;
+  glm::vec3 n0 = mesh->vertices[i0].normal;
+  glm::vec3 n1 = mesh->vertices[i1].normal;
 
   VertexAll mid;
   mid.position = 0.5f * (p0 + p1);
   mid.normal   = glm::normalize(n0 + n1);
 
-  uint32_t newIndex = static_cast<uint32_t>(model->mesh->vertices.size());
-  model->mesh->vertices.push_back(mid);
+  uint32_t newIndex = static_cast<uint32_t>(mesh->vertices.size());
+  mesh->vertices.push_back(mid);
   midpointCache[key] = newIndex;
   return newIndex;
 }
@@ -128,11 +128,11 @@ uint64_t Sculptor::getVertexCash(uint32_t a, uint32_t b)
 void Sculptor::subdivideMesh()
 {
   std::vector<uint32_t> newIndices;
-  for (size_t i = 0; i < model->mesh->indices.size(); i += 3)
+  for (size_t i = 0; i < mesh->indices.size(); i += 3)
   {
-    uint32_t i0 = model->mesh->indices[i];
-    uint32_t i1 = model->mesh->indices[i + 1];
-    uint32_t i2 = model->mesh->indices[i + 2];
+    uint32_t i0 = mesh->indices[i];
+    uint32_t i1 = mesh->indices[i + 1];
+    uint32_t i2 = mesh->indices[i + 2];
 
     uint32_t m0 = sculptMidPoint(i0, i1);
     uint32_t m1 = sculptMidPoint(i1, i2);
@@ -143,21 +143,5 @@ void Sculptor::subdivideMesh()
     newIndices.insert(newIndices.end(), {i2, m2, m1});
     newIndices.insert(newIndices.end(), {m0, m1, m2});
   }
-  model->mesh->indices = std::move(newIndices);
-}
-
-void Sculptor::rotate(float dYawDeg, float dPitDeg)
-{
-  glm::vec3 right = model->transform.rotation * glm::vec3(1, 0, 0);
-  glm::vec3 up    = model->transform.rotation * glm::vec3(0, 1, 0);
-
-  glm::quat pitchRotation = glm::angleAxis(glm::radians(dPitDeg), right); // 로컬 X
-  glm::quat yawRotation   = glm::angleAxis(glm::radians(dYawDeg), up);    // 로컬 Y
-
-  model->transform.rotation = glm::normalize(yawRotation * pitchRotation * model->transform.rotation);
-
-  glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), model->transform.position) *
-                       glm::toMat4(model->transform.rotation) *
-                       glm::scale(glm::mat4(1.0f), model->transform.scale);
-  model->constant.modelMatrix = modelMat;
+  mesh->indices = std::move(newIndices);
 }

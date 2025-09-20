@@ -29,11 +29,10 @@ class Sculptor : Painting{
   friend class SculptorMode;
 
 public:
-  Sculptor()  = default;
+  Sculptor(Model* model);
   ~Sculptor() = default;
-  void stroke(Ray ray);
-  bool RayIntersectTriangle(const glm::vec3 &orig,
-                            const glm::vec3 &dir,
+  bool stroke(glm::vec3 strokeDir);
+  bool RayIntersectTriangle(const glm::vec3 &dir,
                             const glm::vec3 &v0,
                             const glm::vec3 &v1,
                             const glm::vec3 &v2,
@@ -43,10 +42,9 @@ public:
   uint64_t sculptMidPoint(uint32_t i0, uint32_t i1);
   uint64_t getVertexCash(uint32_t a, uint32_t b);
   void rotate(float dYawDeg, float dPitDeg);
-  bool castRayToMesh(const glm::vec3 &rayOrig, const glm::vec3 &rayDir);
+  bool castRayToMesh(const glm::vec3 &rayDir);
   void subdivideMesh();
-
-private:
+  private:
   std::unordered_map<uint64_t, uint32_t> midpointCache;
   bool isDynamic     = true;
   bool dirty_        = false;
@@ -57,7 +55,8 @@ private:
   5.0,
   0.3
   };
-  Model* model;
+  Mesh* mesh;
+
 };
 
 #endif //MYPROJECT_SCULPTOR_HPP

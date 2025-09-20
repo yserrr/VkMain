@@ -33,6 +33,7 @@ struct Camera{
   void directionReverse();
   void lookAt(glm::vec3 center);
   void addFov(float dt);
+  void addQuat(float dYawDeg, float dPitDeg);
   void rotate(float dYawDeg, float dPitDeg);
 
   Ray generateRay(double posX, double posY);

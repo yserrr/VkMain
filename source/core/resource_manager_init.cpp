@@ -28,7 +28,7 @@ ResourceManager::ResourceManager(const ResourceManagerCreateInfo &info) :
   CamCI cam_ci{};
   cam_ci.fov         = glm::radians(350.0f);
   cam_ci.aspectRatio = 2400 / 1200;
-  cam_ci.nearPlane   = 1.0;
+  cam_ci.nearPlane   = 1;
   cam_ci.farPlane    = 256.0;
   camera             = std::make_unique<Camera>(cam_ci);
 

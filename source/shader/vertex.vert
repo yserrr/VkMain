@@ -15,6 +15,7 @@ layout (location = 1) out vec3 outNormal;
 layout (location = 2) out vec2 fragTexCoord;
 layout (location = 3) out mat3 TBN;
 layout (location = 6) out vec3 camPos;
+layout (location = 7) out vec2 background;
 //set 0 binding 0 -> uniform buffer 
 layout (set = 0, binding = 0) uniform cameraUBD {
   mat4 view;
@@ -28,6 +29,7 @@ layout (push_constant) uniform PushConstants {
   uint bindlessIndex;
 } constant;
 
+vec2 positions[4] = vec2[](vec2(-1,-1), vec2(1,-1), vec2(1,1), vec2(-1,1));
 void main() {
 
   vec3 N = normalize(inNormal);
@@ -43,5 +45,5 @@ void main() {
   fragTexCoord = inUV;
   camPos = camera.camPos;
   TBN = mat3(T, B, N);
-
+  background = (positions[gl_VertexIndex] + 1.0) * 0.5;
 }

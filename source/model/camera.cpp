@@ -6,7 +6,7 @@ static float toRadians(float deg)
 }
 
 Camera::Camera(CamCI info)
-  : pos_(0.0f, 0.0f, 10.0f),
+  : pos_(0.0f, 0.0f, 0.0f),
     dir_(0.0f, 0.0f, -1.0f),
     up_(0.0f, 1.0f, 0.0f),
     fov_(info.fov),
@@ -23,8 +23,8 @@ Camera::Camera(CamCI info)
 
 void Camera::camUpdate()
 {
-  ubo.view = getViewMatrix();
-  ubo.proj = getProjectionMatrix();
+  ubo.view   = getViewMatrix();
+  ubo.proj   = getProjectionMatrix();
   ubo.camPos = pos_;
 }
 
@@ -45,17 +45,16 @@ glm::mat4 Camera::getProjectionMatrix() const
   return pers;
 }
 
-
 Ray Camera::generateRay(double posX, double posY)
 {
   double xNdc = (2 * posX / currentExtent.width) - 1;
   double yNdc = 1 - (2 * posY / currentExtent.height);
 
   float tanFov     = tan(fov_ * 0.5f);
-  float xView      = xNdc * aspect* tanFov;
+  float xView      = xNdc * aspect * tanFov;
   float yView      = yNdc * tanFov;
   glm::vec3 rayDir = glm::vec3(-xView, yView, -1.0f);
-  rayDir = glm::normalize(rayDir);
+  rayDir           = glm::normalize(rayDir);
   Ray ray{pos_, rayDir};
   return ray;
 }
@@ -99,18 +98,12 @@ void Camera::addFov(float dt)
   camUpdate();
 }
 
-void Camera::rotate(float dYawDeg, float dPitDeg)
+void Camera::addQuat(float dYawDeg, float dPitDeg)
 {
-  pitchAccum += dPitDeg;
-  pitchAccum = std::clamp(pitchAccum, -89.0f, 89.0f);
-  glm::quat pitchRotation = glm::angleAxis(glm::radians(pitchAccum), right_);
-  glm::quat yawRotation   = glm::angleAxis(glm::radians(dYawDeg), glm::vec3(0,1,0));
-  orientation_ = yawRotation * pitchRotation;
-  orientation_ = glm::normalize(orientation_);
-  dir_   = glm::normalize(orientation_ * glm::vec3(0,0,-1));
-  right_ = glm::normalize(glm::cross(dir_, glm::vec3(0,1,0)));
-  if (glm::length(right_) < 1e-6f) right_ = glm::vec3(1,0,0);
-  up_    = glm::cross(right_, dir_);
-  spdlog::info("direction:: {} {} {}", dir_.x , dir_.y , dir_.z);
+  glm::quat pitchRotation = glm::angleAxis(toRadians(dPitDeg), right_);
+  glm::quat yawRotation   = glm::angleAxis(toRadians(dYawDeg), glm::vec3(up_));
+  orientation_            = yawRotation * pitchRotation * orientation_;
+  orientation_            = glm::normalize(orientation_);
+  dir_                    = glm::normalize(orientation_ * glm::vec3(0, 0, -1));
   camUpdate();
 }

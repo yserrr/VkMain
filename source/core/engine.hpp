@@ -45,14 +45,12 @@ private:
   uint32_t frameCount;
   uint64_t timeout; //similar with float
   uint32_t imageIndex_;
-//renderer
   std::unique_ptr<Swapchain> swapchain;
   std::unique_ptr<SwapchainViewManager> imageManager;
   std::unique_ptr<RenderPassPool> renderPass;
   std::unique_ptr<FramebufferPool> frameBufferManager;
   std::unique_ptr<CommandPool> commandPool;
   std::unique_ptr<CommandPoolManager> commandBufferManager;
-
   std::unique_ptr<MemoryAllocator> allocator;
   std::unique_ptr<ResourceManager> resourceManager_;
   std::unique_ptr<EventManager> eventManager_;

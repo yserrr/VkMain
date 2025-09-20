@@ -3,10 +3,41 @@
 #include "imgui_impl_glfw.h"
 #include <imgui.h>
 
-EventManager::EventManager(GLFWwindow *window, Camera *mainCam, ResourceManager *resourceManager) :
+ImGuiKey EventManager::glfwToImgui(int key)
+{
+  switch (key)
+  {
+    case GLFW_KEY_TAB: return ImGuiKey_Tab;
+    case GLFW_KEY_LEFT: return ImGuiKey_LeftArrow;
+    case GLFW_KEY_RIGHT: return ImGuiKey_RightArrow;
+    case GLFW_KEY_UP: return ImGuiKey_UpArrow;
+    case GLFW_KEY_DOWN: return ImGuiKey_DownArrow;
+    case GLFW_KEY_PAGE_UP: return ImGuiKey_PageUp;
+    case GLFW_KEY_PAGE_DOWN: return ImGuiKey_PageDown;
+    case GLFW_KEY_HOME: return ImGuiKey_Home;
+    case GLFW_KEY_END: return ImGuiKey_End;
+    case GLFW_KEY_INSERT: return ImGuiKey_Insert;
+    case GLFW_KEY_DELETE: return ImGuiKey_Delete;
+    case GLFW_KEY_BACKSPACE: return ImGuiKey_Backspace;
+    case GLFW_KEY_SPACE: return ImGuiKey_Space;
+    case GLFW_KEY_ENTER: return ImGuiKey_Enter;
+    case GLFW_KEY_ESCAPE: return ImGuiKey_Escape;
+    case GLFW_KEY_A: return ImGuiKey_A;
+    case GLFW_KEY_C: return ImGuiKey_C;
+    case GLFW_KEY_V: return ImGuiKey_V;
+    case GLFW_KEY_X: return ImGuiKey_X;
+    case GLFW_KEY_Y: return ImGuiKey_Y;
+    case GLFW_KEY_Z: return ImGuiKey_Z;
+    default: return ImGuiKey_None;
+  }
+}
+
+EventManager::EventManager(GLFWwindow *window, Camera *mainCam, ResourceManager *resourceManager, VkExtent2D extent) :
   window_(window),
   mainCam(mainCam),
-  resourcesManager_(resourceManager)
+  resourcesManager_(resourceManager),
+  currentExtent(extent)
+
 {
   syncWithCam(mainCam);
   glfwGetCursorPos(window_, &lastX, &lastY);
@@ -18,20 +49,22 @@ EventManager::EventManager(GLFWwindow *window, Camera *mainCam, ResourceManager 
   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
   glfwSetScrollCallback(window, scrollCallback);
 
-//  glfwSetKeyCallback(window, ImGui_ImplGlfw_KeyCallback);
-//  glfwSetCharCallback(window, ImGui_ImplGlfw_CharCallback);
-//  glfwSetMouseButtonCallback(window, ImGui_ImplGlfw_MouseButtonCallback);
-//  glfwSetScrollCallback(window, ImGui_ImplGlfw_ScrollCallback);
-//
   lastActionTime = glfwGetTime();
   spdlog::info("interaction set up");
-  createActor();
+  selectActor();
 }
 
 void EventManager::onKeyEvent(int key, int scancode, int action, int mods)
 {
-  ImGuiIO &io = ImGui::GetIO();
-  if (io.WantCaptureMouse)
+  ImGuiIO &io       = ImGui::GetIO();
+  ImGuiKey imguiKey = glfwToImgui(key);
+  if (imguiKey != ImGuiKey_None)
+  {
+    bool isPressed = (action == GLFW_PRESS || action == GLFW_REPEAT);
+    io.AddKeyEvent(imguiKey, isPressed);
+  }
+  io.SetKeyEventNativeData(imguiKey, key, scancode, mods);
+  if (io.WantCaptureKeyboard)
   {
     return;
   }
@@ -92,7 +125,7 @@ void EventManager::syncWithCam(Camera *cam)
   lastY = 0;
 
   glfwGetCursorPos(window_, &lastX, &lastY);
-  mainCam->rotate(lastX, lastY);
+  mainCam->addQuat(lastX, lastY);
   mainCam->currentExtent = currentExtent;
 }
 
@@ -126,7 +159,7 @@ VkExtent2D EventManager::getExtent()
 void EventManager::getKey()
 {
   ImGuiIO &io = ImGui::GetIO();
-  if (io.WantCaptureMouse)
+  if (io.WantCaptureKeyboard)
   {
     return;
   }
@@ -150,7 +183,8 @@ void EventManager::wheelUpdate()
   {
     return;
   }
-  mainCam->addFov(wheelDelta_);
+
+  actor_->getWheelUpdate(wheelDelta_);
   wheelDelta_ = 0.0f;
 }
 
@@ -159,14 +193,15 @@ void EventManager::setRenderer(SceneRenderer *renderer)
   renderer_ = renderer;
 }
 
-void EventManager::createActor()
+void EventManager::selectActor()
 {
   switch (currentActor_)
   {
     case(ActorMode::Sculptor):
     {
-      actor_                  = std::make_unique<SculptorMode>(mainCam, window_);
-      actor_->sculptor->model = &resourcesManager_->selectedModel;
+      actor_ = std::make_unique<SculptorMode>(window_,
+                                              &resourcesManager_->selectedModel,
+                                              currentExtent);
       break;
     }
     default:
@@ -178,11 +213,6 @@ void EventManager::createActor()
 
 void EventManager::keyCallbackWrapper(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-  ImGuiIO &io = ImGui::GetIO();
-  if (io.WantCaptureMouse)
-  {
-    return;
-  }
   EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
   if (self)
   {
@@ -192,16 +222,10 @@ void EventManager::keyCallbackWrapper(GLFWwindow *window, int key, int scancode,
 
 void EventManager::mouseButtonCallbackWrapper(GLFWwindow *window, int button, int action, int mods)
 {
-  ImGuiIO &io = ImGui::GetIO();
-  if (io.WantCaptureMouse)
-  {
-    return;
-  }
-
   EventManager *self = static_cast<EventManager *>(glfwGetWindowUserPointer(window));
   if (self)
   {
-    self->mouseButtonCallback(window, button, action, mods);
+    self->onMouseButtonCallback(window, button, action, mods);
   }
 }
 
@@ -210,8 +234,12 @@ void EventManager::cursorPosCallbackWrapper(GLFWwindow *window, double xpos, dou
   ImGuiIO &io   = ImGui::GetIO();
   io.MousePos.x = static_cast<float>(xpos);
   io.MousePos.y = static_cast<float>(ypos);
+
+  io.AddMousePosEvent(xpos, ypos);
   if (io.WantCaptureMouse)
   {
+    io.MousePos.x = xpos;
+    io.MousePos.y = ypos;
     return;
   }
 
@@ -236,6 +264,7 @@ void EventManager::framebufferSizeCallback(GLFWwindow *window, int w, int h)
 void EventManager::scrollCallback(GLFWwindow *window, double xoffset, double yoffset)
 {
   ImGuiIO &io = ImGui::GetIO();
+  io.AddMouseWheelEvent(xoffset, yoffset);
   if (io.WantCaptureMouse)
   {
     return;
@@ -244,10 +273,10 @@ void EventManager::scrollCallback(GLFWwindow *window, double xoffset, double yof
   self->wheelDelta_ += yoffset;
 }
 
-void EventManager::mouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
+void EventManager::onMouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
 {
-  ImGuiIO &io          = ImGui::GetIO();
-  io.MouseDown[button] = true;
+  ImGuiIO &io = ImGui::GetIO();
+  io.AddMouseButtonEvent(button, action);
   if (io.WantCaptureMouse)
   {
     return;

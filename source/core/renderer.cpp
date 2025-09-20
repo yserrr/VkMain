@@ -29,7 +29,6 @@ void SceneRenderer::pushConstant(VkCommandBuffer command)
       &resourceManager.selectedModel.constant
   );
 }
-
 void SceneRenderer::createPipeline(std::vector<VkDescriptorSetLayout> *layout_h)
 {
   fragShader = std::make_unique<ShaderModule>(device_h);
